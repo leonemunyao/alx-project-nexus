@@ -295,4 +295,3 @@ def search_suggestions(request):
     suggestions.extend([{'type': 'location', 'value': location} for location in locations])
     
     return Response(suggestions[:10])
-
