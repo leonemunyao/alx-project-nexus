@@ -35,7 +35,7 @@ class DealerSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Dealer
-        fields = ['id', 'user', 'name', 'phone', 'address', 'car_count']
+        fields = ['id', 'user', 'first_name', 'last_name', 'phone', 'address', 'car_count']
     
     def get_car_count(self, obj):
         return obj.cars.filter(published=True).count()
@@ -44,7 +44,15 @@ class DealerCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating dealer profiles"""
     class Meta:
         model = Dealer
-        fields = ['name', 'phone', 'address']
+        fields = ['first_name', 'last_name', 'phone', 'address']
+
+class BuyerSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer(read_only=True)
+    
+    class Meta:
+        model = User
+        fields = ['id', 'user', 'first_name', 'last_name', 'email', 'date_joined']
+        read_only_fields = ['id', 'username', 'date_joined']
 
 class CategorySerializer(serializers.ModelSerializer):
     car_count = serializers.SerializerMethodField()
@@ -59,7 +67,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class CarImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarImage
-        fields = ['id', 'image', 'order']
+        fields = ['id', 'image', 'order', 'created_at']
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer(read_only=True)
@@ -216,7 +224,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Favorite
-        fields = ['id', 'car']
+        fields = ['id', 'car', 'created_at']
 
 class FavoriteCreateSerializer(serializers.ModelSerializer):
     class Meta:

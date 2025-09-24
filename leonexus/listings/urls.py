@@ -4,6 +4,9 @@ from . import views
 app_name = 'listings'
 
 urlpatterns = [
+    # Authentication
+    path('auth/login/', views.CustomAuthToken.as_view(), name='auth-login'),
+    path('auth/logout/', views.CustomLogoutView.as_view(), name='auth-logout'),
     # User URLs
     path('users/', views.UserListCreateView.as_view(), name='user-list-create'),
     path('users/profile/', views.UserDetailView.as_view(), name='user-profile'),
