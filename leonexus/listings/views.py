@@ -7,13 +7,13 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Avg
-from .models import User, Dealer, Category, Car, CarImage, Review, Favorite
+from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buyer
 from .serializers import (
     UserSerializer, UserProfileSerializer, DealerSerializer, 
     DealerCreateSerializer, CategorySerializer, CarListSerializer,
     CarDetailSerializer, CarCreateUpdateSerializer, CarImageSerializer,
     ReviewSerializer, ReviewCreateSerializer, FavoriteSerializer,
-    FavoriteCreateSerializer
+    FavoriteCreateSerializer, BuyerSerializer, BuyerCreateSerializer
 )
 
 # Custom Permissions
@@ -106,6 +106,30 @@ class DealerDetailView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return get_object_or_404(Dealer, user=self.request.user)
+
+class BuyerListView(generics.ListAPIView):
+    queryset = Buyer.objects.all()
+    serializer_class = BuyerSerializer
+    permission_classes = [AllowAny]
+
+class BuyerCreateView(generics.CreateAPIView):
+    serializer_class = BuyerCreateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Only users with BUYER role can create buyer profiles
+        if self.request.user.role != 'BUYER':
+            self.request.user.role = 'BUYER'
+            self.request.user.save()
+        serializer.save(user=self.request.user)
+
+class BuyerDetailView(generics.RetrieveUpdateAPIView):
+    queryset = Buyer.objects.all()
+    serializer_class = BuyerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return get_object_or_404(Buyer, user=self.request.user)
 
 # Category Views
 class CategoryListView(generics.ListAPIView):

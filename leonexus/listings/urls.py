@@ -10,6 +10,11 @@ urlpatterns = [
     # User URLs
     path('users/', views.UserListCreateView.as_view(), name='user-list-create'),
     path('users/profile/', views.UserDetailView.as_view(), name='user-profile'),
+
+        # Buyer URLs
+    path('buyers/', views.BuyerListView.as_view(), name='buyer-list'),
+    path('buyers/create/', views.BuyerCreateView.as_view(), name='buyer-create'),
+    path('buyers/profile/', views.BuyerDetailView.as_view(), name='buyer-profile'),
     
     # Dealer URLs
     path('dealers/', views.DealerListView.as_view(), name='dealer-list'),

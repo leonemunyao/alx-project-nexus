@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.db import models
-from .models import User, Dealer, Category, Car, CarImage, Review, Favorite
+from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buyer
 
 User = get_user_model()
 
@@ -53,6 +53,12 @@ class BuyerSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'user', 'first_name', 'last_name', 'email', 'date_joined']
         read_only_fields = ['id', 'username', 'date_joined']
+
+class BuyerCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating buyer profiles"""
+    class Meta:
+        model = Buyer
+        fields = ['first_name', 'last_name', 'phone']
 
 class CategorySerializer(serializers.ModelSerializer):
     car_count = serializers.SerializerMethodField()
