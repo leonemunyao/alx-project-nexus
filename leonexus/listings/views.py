@@ -7,7 +7,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Avg
-from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buyer
+from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buyer, Category
 from .serializers import (
     UserSerializer, UserProfileSerializer, DealerSerializer, 
     DealerCreateSerializer, CategorySerializer, CarListSerializer,
@@ -136,6 +136,11 @@ class CategoryListView(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
+
+class CategoryCreateView(generics.CreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAdminUser]
 
 # Car Views - Main CRUD Operations
 class CarListCreateView(generics.ListCreateAPIView):

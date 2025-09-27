@@ -74,10 +74,11 @@ class CarAdmin(admin.ModelAdmin):
         }),
     )
 
-
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
+    search_fields = ('name',)
+    list_filter = ('created_at',)
 
 
 class ReviewAdmin(admin.ModelAdmin):

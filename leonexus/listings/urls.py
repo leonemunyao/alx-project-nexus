@@ -7,6 +7,7 @@ urlpatterns = [
     # Authentication
     path('auth/login/', views.CustomAuthToken.as_view(), name='auth-login'),
     path('auth/logout/', views.CustomLogoutView.as_view(), name='auth-logout'),
+
     # User URLs
     path('users/', views.UserListCreateView.as_view(), name='user-list-create'),
     path('users/profile/', views.UserDetailView.as_view(), name='user-profile'),
@@ -24,6 +25,7 @@ urlpatterns = [
     
     # Category URLs
     path('categories/', views.CategoryListView.as_view(), name='category-list'),
+    path('categories/create/', views.CategoryCreateView.as_view(), name='category-create'),
     
     # Car URLs - Main CRUD Operations
     path('cars/', views.CarListCreateView.as_view(), name='car-list-create'),
