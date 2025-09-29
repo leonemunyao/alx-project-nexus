@@ -53,10 +53,18 @@ const SignIn = () => {
         
         if (user?.role === 'DEALER') {
           console.log('Redirecting to dealer dashboard...');
+          // Try both methods to ensure navigation works
           navigate('/dashboard', { replace: true });
+          // Fallback: force navigation
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 100);
         } else if (user?.role === 'BUYER') {
           console.log('Redirecting to buyer dashboard...');
           navigate('/buyer-dashboard', { replace: true });
+          setTimeout(() => {
+            window.location.href = '/buyer-dashboard';
+          }, 100);
         } else {
           // Fallback to stored user if context user is not available
           const currentUser = authUtils.getStoredUser();
