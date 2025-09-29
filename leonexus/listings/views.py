@@ -275,21 +275,23 @@ class DealerCarDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(detail_serializer.data)
 
 # Review Views
-class CarReviewListCreateView(generics.ListCreateAPIView):
+class CarReviewListView(generics.ListAPIView):
     """
-    GET /cars/<car_id>/reviews/ → list reviews
-    POST /cars/<car_id>/reviews/ → create review
+    GET /cars/<car_id>/reviews/ → list reviews for a specific car
     """
+    serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         car_id = self.kwargs['car_id']
         return Review.objects.filter(car_id=car_id).select_related('user')
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ReviewCreateSerializer
-        return ReviewSerializer
+class CarReviewCreateView(generics.CreateAPIView):
+    """
+    POST /cars/<car_id>/reviews/create/ → create review for a specific car
+    """
+    serializer_class = ReviewCreateSerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         car_id = self.kwargs['car_id']

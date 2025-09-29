@@ -36,7 +36,8 @@ urlpatterns = [
     path('cars/<int:pk>/', views.CarDetailView.as_view(), name='car-detail'),
     
     # Review URLs
-    path('cars/<int:car_id>/reviews/', views.CarReviewListCreateView.as_view(), name='car-reviews'),
+    path('cars/<int:car_id>/reviews/', views.CarReviewListView.as_view(), name='car-reviews-list'),
+    path('cars/<int:car_id>/reviews/create/', views.CarReviewCreateView.as_view(), name='car-reviews-create'),
     path('reviews/<int:pk>/', views.ReviewDetailView.as_view(), name='review-detail'),
     
     # Favorite URLs
@@ -44,7 +45,4 @@ urlpatterns = [
     path('favorites/<int:pk>/', views.FavoriteDetailView.as_view(), name='favorite-detail'),
     path('cars/<int:car_id>/toggle-favorite/', views.toggle_favorite, name='toggle-favorite'),
     
-    # Additional API endpoints
-    path('stats/', views.car_stats, name='car-stats'),
-    path('search-suggestions/', views.search_suggestions, name='search-suggestions'),
 ]
