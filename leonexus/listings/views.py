@@ -207,6 +207,16 @@ class CarDetailView(generics.RetrieveUpdateDestroyAPIView):
             return CarCreateUpdateSerializer
         return CarDetailSerializer
 
+    def get_object(self):
+        obj = super().get_object()
+        # For dealers, ensure they can only access their own cars for write operations
+        if self.request.method not in ['GET', 'HEAD', 'OPTIONS']:
+            if (hasattr(self.request.user, 'dealer_profile') and 
+                obj.dealer != self.request.user.dealer_profile):
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("You can only modify your own cars.")
+        return obj
+
 # Dealer's Car Management Views
 class DealerCarListView(generics.ListAPIView):
     """List all cars for authenticated dealer"""
@@ -217,6 +227,41 @@ class DealerCarListView(generics.ListAPIView):
         if not hasattr(self.request.user, 'dealer_profile'):
             return Car.objects.none()
         return Car.objects.filter(dealer=self.request.user.dealer_profile).select_related('category')
+
+class DealerCarCreateView(generics.CreateAPIView):
+    """Create a new car listing for authenticated dealer"""
+    serializer_class = CarCreateUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Ensure user has dealer profile
+        if not hasattr(self.request.user, 'dealer_profile'):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'error': 'You must create a dealer profile first'})
+        serializer.save(dealer=self.request.user.dealer_profile)
+
+class DealerCarDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update, or delete a specific car for authenticated dealer"""
+    serializer_class = CarDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if not hasattr(self.request.user, 'dealer_profile'):
+            return Car.objects.none()
+        return Car.objects.filter(dealer=self.request.user.dealer_profile).select_related('dealer', 'category').prefetch_related('images', 'reviews__user')
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return CarCreateUpdateSerializer
+        return CarDetailSerializer
+
+    def get_object(self):
+        obj = super().get_object()
+        # Ensure dealer can only access their own cars
+        if obj.dealer != self.request.user.dealer_profile:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You can only access your own cars.")
+        return obj
 
 # Review Views
 class CarReviewListCreateView(generics.ListCreateAPIView):
