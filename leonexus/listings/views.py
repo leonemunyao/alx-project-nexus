@@ -307,6 +307,16 @@ class CarReviewListCreateView(generics.ListCreateAPIView):
         
         serializer.save(user=self.request.user, car=car)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        # Return the created review using the full ReviewSerializer
+        review = serializer.instance
+        review_serializer = ReviewSerializer(review, context={'request': request})
+        return Response(review_serializer.data, status=status.HTTP_201_CREATED)
+
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Update/Delete own reviews"""
     queryset = Review.objects.all()
