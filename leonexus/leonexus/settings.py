@@ -176,8 +176,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
-    "https://alx-project-nexus-leone.vercel.app/", 
+    "https://alx-project-nexus-leone.vercel.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# For development/testing - allows all origins
+CORS_ALLOW_ALL_ORIGINS = True
 
