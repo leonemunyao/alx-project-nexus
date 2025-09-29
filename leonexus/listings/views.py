@@ -297,17 +297,13 @@ class CarReviewListCreateView(generics.ListCreateAPIView):
         
         # Prevent dealers from reviewing their own cars
         if hasattr(self.request.user, 'dealer_profile') and car.dealer == self.request.user.dealer_profile:
-            return Response(
-                {'error': 'You cannot review your own car'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'error': 'You cannot review your own car'})
         
         # Prevent duplicate reviews
         if Review.objects.filter(user=self.request.user, car=car).exists():
-            return Response(
-                {'error': 'You have already reviewed this car'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'error': 'You have already reviewed this car'})
         
         serializer.save(user=self.request.user, car=car)
 
