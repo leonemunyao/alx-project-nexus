@@ -52,18 +52,23 @@ const SignIn = () => {
         console.log('User role:', user?.role);
         
         if (user?.role === 'DEALER') {
+          console.log('Redirecting to dealer dashboard...');
           navigate('/dashboard', { replace: true });
         } else if (user?.role === 'BUYER') {
+          console.log('Redirecting to buyer dashboard...');
           navigate('/buyer-dashboard', { replace: true });
         } else {
           // Fallback to stored user if context user is not available
           const currentUser = authUtils.getStoredUser();
           console.log('Fallback user from storage:', currentUser);
           if (currentUser?.role === 'DEALER') {
+            console.log('Fallback: Redirecting to dealer dashboard...');
             navigate('/dashboard', { replace: true });
           } else if (currentUser?.role === 'BUYER') {
+            console.log('Fallback: Redirecting to buyer dashboard...');
             navigate('/buyer-dashboard', { replace: true });
           } else {
+            console.log('Fallback: Redirecting to home...');
             navigate('/', { replace: true });
           }
         }

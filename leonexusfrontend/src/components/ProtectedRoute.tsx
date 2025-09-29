@@ -33,7 +33,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Check role if required
   if (requiredRole && user?.role !== requiredRole) {
     // Redirect to appropriate dashboard based on user role
+    console.log('ProtectedRoute: User role mismatch. Required:', requiredRole, 'User role:', user?.role);
     const redirectPath = user?.role === 'DEALER' ? '/dashboard' : '/buyer-dashboard';
+    console.log('ProtectedRoute: Redirecting to:', redirectPath);
     return <Navigate to={redirectPath} replace />;
   }
 
