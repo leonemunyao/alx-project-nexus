@@ -47,9 +47,18 @@ const SignIn = () => {
         navigate(from, { replace: true });
       } else {
         // Redirect based on user role after login
-        // Use a small delay to ensure user state is updated
-        setTimeout(() => {
+        // Use the user from context which should be updated by login()
+        console.log('User from context:', user);
+        console.log('User role:', user?.role);
+        
+        if (user?.role === 'DEALER') {
+          navigate('/dashboard', { replace: true });
+        } else if (user?.role === 'BUYER') {
+          navigate('/buyer-dashboard', { replace: true });
+        } else {
+          // Fallback to stored user if context user is not available
           const currentUser = authUtils.getStoredUser();
+          console.log('Fallback user from storage:', currentUser);
           if (currentUser?.role === 'DEALER') {
             navigate('/dashboard', { replace: true });
           } else if (currentUser?.role === 'BUYER') {
@@ -57,7 +66,7 @@ const SignIn = () => {
           } else {
             navigate('/', { replace: true });
           }
-        }, 100);
+        }
       }
     } catch (error) {
       console.error('Login error:', error);
