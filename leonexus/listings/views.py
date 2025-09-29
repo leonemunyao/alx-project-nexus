@@ -43,12 +43,42 @@ class CustomAuthToken(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
-        return Response({
+        
+        # Prepare response data
+        response_data = {
             'token': token.key,
             'user_id': user.pk,
             'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
             'role': user.role
-        })
+        }
+        
+        # Add dealer profile information if user is a dealer
+        if user.role == 'DEALER' and hasattr(user, 'dealer_profile'):
+            dealer = user.dealer_profile
+            response_data['dealer_profile'] = {
+                'id': dealer.id,
+                'first_name': dealer.first_name,
+                'last_name': dealer.last_name,
+                'phone': dealer.phone,
+                'address': dealer.address,
+                'created_at': dealer.created_at.isoformat()
+            }
+        
+        # Add buyer profile information if user is a buyer
+        if user.role == 'BUYER' and hasattr(user, 'buyer_profile'):
+            buyer = user.buyer_profile
+            response_data['buyer_profile'] = {
+                'id': buyer.id,
+                'first_name': buyer.first_name,
+                'last_name': buyer.last_name,
+                'phone': buyer.phone,
+                'created_at': buyer.created_at.isoformat()
+            }
+        
+        return Response(response_data)
 
 class CustomLogoutView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]

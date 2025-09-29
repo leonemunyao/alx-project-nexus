@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Lamborghini-inspired Car Marketplace Design System
+Premium automotive aesthetic with deep blacks, whites, and gold accents
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Core Colors - Light Theme with Gold Accents */
+    --background: 0 0% 96%;
+    /* Light gray background */
+    --foreground: 0 0% 10%;
+    /* Dark text */
+
+    --card: 0 0% 100%;
+    /* White card background */
+    --card-foreground: 0 0% 10%;
+    /* Dark card text */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    /* Lamborghini Gold Accent */
+    --primary: 47 85% 55%;
+    /* Luxurious gold */
+    --primary-foreground: 0 0% 0%;
+    /* Dark text on gold */
+
+    --secondary: 0 0% 90%;
+    /* Light gray */
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 0 0% 92%;
+    /* Subtle light gray */
+    --muted-foreground: 0 0% 45%;
+    /* Medium gray text */
+
+    --accent: 47 85% 55%;
+    /* Luxurious gold accent */
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84% 60%;
+    /* Red for errors */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 85%;
+    /* Light borders */
+    --input: 0 0% 100%;
+    /* White input backgrounds */
+    --ring: 47 85% 55%;
+    /* Luxurious gold focus ring */
+
+    --radius: 0.75rem;
+    /* Slightly larger radius for premium feel */
+
+    /* Custom Design Tokens */
+    --premium-gold: 47 85% 55%;
+    /* Luxurious gold */
+    --deep-black: 0 0% 10%;
+    /* Dark text accents */
+    --charcoal: 0 0% 100%;
+    /* Card backgrounds */
+    --dark-gray: 0 0% 90%;
+    /* Secondary elements */
+    --light-gray: 0 0% 45%;
+    /* Subtle text */
+
+    /* Gradients */
+    --gradient-premium: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 96%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(47 85% 55%) 0%, hsl(50 90% 65%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 96%) 100%);
+
+    /* Shadows */
+    --shadow-premium: 0 25px 50px -12px hsl(0 0% 0% / 0.1);
+    --shadow-card: 0 10px 30px -5px hsl(0 0% 0% / 0.08);
+    --shadow-gold: 0 0 40px hsl(47 85% 55% / 0.4);
+
+    /* Animations */
+    --transition-premium: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Light theme applied to dark mode as well */
+    --background: 0 0% 96%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 47 85% 55%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 90%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 47 85% 55%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 85%;
+    --input: 0 0% 100%;
+    --ring: 47 85% 55%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 47 85% 55%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 90%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 0 0% 85%;
+    --sidebar-ring: 47 85% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
