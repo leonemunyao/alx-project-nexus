@@ -263,6 +263,17 @@ class DealerCarDetailView(generics.RetrieveUpdateDestroyAPIView):
             raise PermissionDenied("You can only access your own cars.")
         return obj
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        # Return the updated instance using the detail serializer
+        detail_serializer = CarDetailSerializer(instance, context={'request': request})
+        return Response(detail_serializer.data)
+
 # Review Views
 class CarReviewListCreateView(generics.ListCreateAPIView):
     """
