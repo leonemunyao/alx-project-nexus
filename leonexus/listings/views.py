@@ -310,7 +310,11 @@ class CarReviewListCreateView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        
+        try:
+            self.perform_create(serializer)
+        except ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
         
         # Return the created review using the full ReviewSerializer
         review = serializer.instance
