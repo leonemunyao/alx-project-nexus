@@ -181,6 +181,4 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-# For development/testing - allows all origins
-CORS_ALLOW_ALL_ORIGINS = True
 

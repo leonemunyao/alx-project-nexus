@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { authUtils } from "@/services/api";
 import Header from "@/components/Header";
 
 const SignIn = () => {
@@ -19,7 +20,7 @@ const SignIn = () => {
   const { login, isLoading } = useAuth();
 
   // Get the intended destination from location state or default to appropriate dashboard
-  const from = location.state?.from?.pathname || "/";
+  const from = location.state?.from?.pathname;
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,8 +42,20 @@ const SignIn = () => {
         description: "Successfully signed in to your account",
       });
 
-      // Navigate to the intended destination or appropriate dashboard
-      navigate(from, { replace: true });
+      // Navigate to the intended destination or appropriate dashboard based on user role
+      if (from) {
+        navigate(from, { replace: true });
+      } else {
+        // Redirect based on user role after login
+        const user = authUtils.getStoredUser();
+        if (user?.role === 'DEALER') {
+          navigate('/dashboard', { replace: true });
+        } else if (user?.role === 'BUYER') {
+          navigate('/buyer-dashboard', { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
+      }
     } catch (error) {
       console.error('Login error:', error);
       toast({
