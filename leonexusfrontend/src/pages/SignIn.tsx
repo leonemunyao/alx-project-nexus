@@ -17,7 +17,7 @@ const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
 
   // Get the intended destination from location state or default to appropriate dashboard
   const from = location.state?.from?.pathname;
@@ -47,14 +47,17 @@ const SignIn = () => {
         navigate(from, { replace: true });
       } else {
         // Redirect based on user role after login
-        const user = authUtils.getStoredUser();
-        if (user?.role === 'DEALER') {
-          navigate('/dashboard', { replace: true });
-        } else if (user?.role === 'BUYER') {
-          navigate('/buyer-dashboard', { replace: true });
-        } else {
-          navigate('/', { replace: true });
-        }
+        // Use a small delay to ensure user state is updated
+        setTimeout(() => {
+          const currentUser = authUtils.getStoredUser();
+          if (currentUser?.role === 'DEALER') {
+            navigate('/dashboard', { replace: true });
+          } else if (currentUser?.role === 'BUYER') {
+            navigate('/buyer-dashboard', { replace: true });
+          } else {
+            navigate('/', { replace: true });
+          }
+        }, 100);
       }
     } catch (error) {
       console.error('Login error:', error);
