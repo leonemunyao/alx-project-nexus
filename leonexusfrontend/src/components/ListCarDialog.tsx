@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Car, Plus, DollarSign, MapPin, Gauge, Fuel, Settings, Camera, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { categoriesApi, Category } from "@/services/api";
 
 interface ListCarDialogProps {
     isOpen: boolean;
@@ -17,6 +18,8 @@ interface ListCarDialogProps {
 
 const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
     const { toast } = useToast();
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [isLoadingCategories, setIsLoadingCategories] = useState(false);
     const [formData, setFormData] = useState({
         category: "",
         title: "",
@@ -33,6 +36,30 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
     });
 
     const [images, setImages] = useState<File[]>([]);
+
+    // Fetch categories when dialog opens
+    useEffect(() => {
+        const fetchCategories = async () => {
+            if (isOpen && categories.length === 0) {
+                setIsLoadingCategories(true);
+                try {
+                    const fetchedCategories = await categoriesApi.getCategories();
+                    setCategories(fetchedCategories);
+                } catch (error) {
+                    console.error('Failed to fetch categories:', error);
+                    toast({
+                        title: "Error",
+                        description: "Failed to load categories. Please try again.",
+                        variant: "destructive",
+                    });
+                } finally {
+                    setIsLoadingCategories(false);
+                }
+            }
+        };
+
+        fetchCategories();
+    }, [isOpen, categories.length, toast]);
 
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -82,11 +109,6 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
         "Honda", "Ford", "Hyundai", "Kia", "Mazda", "Subaru", "Mitsubishi"
     ];
 
-    const categories = [
-        "Sedan", "SUV", "Hatchback", "Coupe", "Convertible", "Truck",
-        "Van", "Wagon", "Crossover", "Luxury", "Sports Car"
-    ];
-
     const conditions = [
         "New", "Ex-Uk", "Ex-Japan"
     ];
@@ -126,14 +148,18 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
                                     <Label htmlFor="category">Category *</Label>
                                     <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select category" />
+                                            <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select category"} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {categories.map((category) => (
-                                                <SelectItem key={category} value={category}>
-                                                    {category}
-                                                </SelectItem>
-                                            ))}
+                                            {isLoadingCategories ? (
+                                                <SelectItem value="" disabled>Loading categories...</SelectItem>
+                                            ) : (
+                                                categories.map((category) => (
+                                                    <SelectItem key={category.id} value={category.id.toString()}>
+                                                        {category.name}
+                                                    </SelectItem>
+                                                ))
+                                            )}
                                         </SelectContent>
                                     </Select>
                                 </div>

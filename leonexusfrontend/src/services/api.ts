@@ -29,6 +29,13 @@ export interface BuyerProfile {
   created_at: string;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  created_at: string;
+}
+
 export interface AuthResponse {
   token: string;
   user_id: number;
@@ -147,6 +154,19 @@ export const authApi = {
   // Get buyer profile
   getBuyerProfile: async (): Promise<BuyerProfile> => {
     const response = await fetch(`${API_BASE_URL}/buyers/profile/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    return handleApiResponse(response);
+  },
+};
+
+// Categories API Functions
+export const categoriesApi = {
+  // Get all categories
+  getCategories: async (): Promise<Category[]> => {
+    const response = await fetch(`${API_BASE_URL}/categories/`, {
       method: 'GET',
       headers: getAuthHeaders(),
     });
