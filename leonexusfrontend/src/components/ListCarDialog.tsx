@@ -43,8 +43,7 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
             if (isOpen && categories.length === 0) {
                 setIsLoadingCategories(true);
                 try {
-                    const fetchedCategories = await categoriesApi.getCategories();
-                    console.log('Fetched categories:', fetchedCategories); // Debug log
+                    const fetchedCategories = await categoriesApi.getCategories()
                     
                     // The API function now handles the response format internally
                     // and always returns an array, so we can safely set it
