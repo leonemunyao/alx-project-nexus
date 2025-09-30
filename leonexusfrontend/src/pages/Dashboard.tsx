@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import EditCarDialog from "@/components/EditCarDialog";
+import ListCarDialog from "@/components/ListCarDialog";
 
 interface Car {
   id: string;
@@ -30,6 +31,7 @@ const Dashboard = () => {
   const [dealer, setDealer] = useState<Dealer | null>(null);
   const [cars, setCars] = useState<Car[]>([]);
   const [editingCar, setEditingCar] = useState<Car | null>(null);
+  const [isListCarDialogOpen, setIsListCarDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { logout } = useAuth();
@@ -116,13 +118,23 @@ const Dashboard = () => {
   const handleEditCar = (carData: Omit<Car, "id">) => {
     if (!editingCar) return;
 
-    const updatedCar = { ...carData, id: editingCar.id };
+    const updatedCar = { ...editingCar, ...carData };
     setCars(cars.map(car => car.id === editingCar.id ? updatedCar : car));
+    setEditingCar(null);
     toast({
       title: "Car updated successfully",
       description: `${carData.make} ${carData.model} has been updated`,
     });
-    setEditingCar(null);
+  };
+
+  const handleAddCar = (carData: any) => {
+    const newCar: Car = {
+      ...carData,
+      id: Date.now().toString(),
+      image: "/placeholder.svg", // Default image, would be replaced with actual uploaded images
+      status: "available" as const,
+    };
+    setCars([...cars, newCar]);
   };
 
   const handleDeleteCar = (carId: string) => {
@@ -227,12 +239,13 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Your Car Inventory</CardTitle>
-              <Link to="/sell">
-                <Button className="bg-gradient-gold hover:shadow-gold transition-all duration-300 gap-2">
-                  <Plus className="w-4 h-4" />
-                  List Your Car
-                </Button>
-              </Link>
+              <Button
+                onClick={() => setIsListCarDialogOpen(true)}
+                className="bg-gradient-gold hover:shadow-gold transition-all duration-300 gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                List Your Car
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -289,6 +302,12 @@ const Dashboard = () => {
       </div>
 
       {/* Dialogs */}
+      <ListCarDialog
+        isOpen={isListCarDialogOpen}
+        onClose={() => setIsListCarDialogOpen(false)}
+        onAdd={handleAddCar}
+      />
+
       {editingCar && (
         <EditCarDialog
           isOpen={!!editingCar}
