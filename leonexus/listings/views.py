@@ -11,7 +11,7 @@ from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buy
 from .serializers import (
     UserSerializer, UserProfileSerializer, DealerSerializer, 
     DealerCreateSerializer, CategorySerializer, CarListSerializer,
-    CarDetailSerializer, CarCreateUpdateSerializer, CarImageSerializer,
+    DealerCarListSerializer, CarDetailSerializer, CarCreateUpdateSerializer, CarImageSerializer,
     ReviewSerializer, ReviewCreateSerializer, FavoriteSerializer,
     FavoriteCreateSerializer, BuyerSerializer, BuyerCreateSerializer
 )
@@ -250,13 +250,13 @@ class CarDetailView(generics.RetrieveUpdateDestroyAPIView):
 # Dealer's Car Management Views
 class DealerCarListView(generics.ListAPIView):
     """List all cars for authenticated dealer"""
-    serializer_class = CarListSerializer
+    serializer_class = DealerCarListSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if not hasattr(self.request.user, 'dealer_profile'):
             return Car.objects.none()
-        return Car.objects.filter(dealer=self.request.user.dealer_profile).select_related('category')
+        return Car.objects.filter(dealer=self.request.user.dealer_profile).select_related('category').prefetch_related('images')
 
 class DealerCarCreateView(generics.CreateAPIView):
     """Create a new car listing for authenticated dealer"""

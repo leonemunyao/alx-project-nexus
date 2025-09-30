@@ -77,9 +77,6 @@ const EditCarDialog = ({ isOpen, onClose, onEdit, car }: EditCarDialogProps) => 
 
   // Update form data when car changes
   useEffect(() => {
-    console.log('EditCarDialog: Car data received:', car);
-    console.log('EditCarDialog: Description value:', car.description);
-    
     setFormData({
       category: car.category?.toString() || "",
       title: car.title || "",
