@@ -47,38 +47,17 @@ const SignIn = () => {
         navigate(from, { replace: true });
       } else {
         // Redirect based on user role after login
-        // Use the user from context which should be updated by login()
-        console.log('User from context:', user);
-        console.log('User role:', user?.role);
+        const currentUser = authUtils.getStoredUser();
         
-        if (user?.role === 'DEALER') {
-          console.log('Redirecting to dealer dashboard...');
-          // Try both methods to ensure navigation works
-          navigate('/dashboard', { replace: true });
-          // Fallback: force navigation
-          setTimeout(() => {
-            window.location.href = '/dashboard';
-          }, 100);
-        } else if (user?.role === 'BUYER') {
-          console.log('Redirecting to buyer dashboard...');
-          navigate('/buyer-dashboard', { replace: true });
-          setTimeout(() => {
-            window.location.href = '/buyer-dashboard';
-          }, 100);
+        if (currentUser?.role === 'DEALER') {
+          // Force navigation to dealer dashboard
+          window.location.href = '/dashboard';
+        } else if (currentUser?.role === 'BUYER') {
+          // Force navigation to buyer dashboard
+          window.location.href = '/buyer-dashboard';
         } else {
-          // Fallback to stored user if context user is not available
-          const currentUser = authUtils.getStoredUser();
-          console.log('Fallback user from storage:', currentUser);
-          if (currentUser?.role === 'DEALER') {
-            console.log('Fallback: Redirecting to dealer dashboard...');
-            navigate('/dashboard', { replace: true });
-          } else if (currentUser?.role === 'BUYER') {
-            console.log('Fallback: Redirecting to buyer dashboard...');
-            navigate('/buyer-dashboard', { replace: true });
-          } else {
-            console.log('Fallback: Redirecting to home...');
-            navigate('/', { replace: true });
-          }
+          // Fallback to home page
+          navigate('/', { replace: true });
         }
       }
     } catch (error) {
