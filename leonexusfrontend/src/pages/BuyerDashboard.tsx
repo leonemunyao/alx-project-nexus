@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  User, 
-  CreditCard, 
-  Calendar, 
-  LogOut, 
-  Car, 
-  MapPin, 
-  Clock, 
+import {
+  User,
+  CreditCard,
+  Calendar,
+  LogOut,
+  Car,
+  MapPin,
+  Clock,
   Download,
   Edit,
   Phone,
@@ -56,13 +56,25 @@ const BuyerDashboard = () => {
 
   useEffect(() => {
     // Check if buyer is logged in
-    const buyerData = localStorage.getItem("buyer");
-    if (!buyerData) {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
       navigate("/signin");
       return;
     }
 
-    setBuyer(JSON.parse(buyerData));
+    const user = JSON.parse(userData);
+    if (user.role !== 'BUYER') {
+      navigate("/signin");
+      return;
+    }
+
+    // Set buyer data from the user data
+    setBuyer({
+      name: `${user.first_name} ${user.last_name}`,
+      email: user.email,
+      phone: undefined,
+      userType: user.role
+    });
 
     // Load dummy payments data
     const dummyPayments: Payment[] = [
@@ -222,7 +234,7 @@ const BuyerDashboard = () => {
                           <span className="text-foreground">{buyer.name}</span>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-muted-foreground">Email Address</label>
                         <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
@@ -248,7 +260,7 @@ const BuyerDashboard = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <Button variant="outline" className="gap-2">
                     <Edit className="w-4 h-4" />
                     Edit Profile
@@ -283,7 +295,7 @@ const BuyerDashboard = () => {
                               })}
                             </p>
                           </div>
-                          
+
                           <div className="flex items-center gap-4">
                             <div className="text-right">
                               <p className="font-bold text-lg">${payment.amount.toLocaleString()}</p>
@@ -291,7 +303,7 @@ const BuyerDashboard = () => {
                                 {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                               </Badge>
                             </div>
-                            
+
                             <Button variant="outline" size="sm" className="gap-2">
                               <Download className="w-4 h-4" />
                               Receipt
@@ -352,12 +364,12 @@ const BuyerDashboard = () => {
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="flex flex-col items-end gap-2">
                             <Badge className={getBookingStatusColor(booking.status)}>
                               {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                             </Badge>
-                            
+
                             {booking.status === "confirmed" && (
                               <Button variant="outline" size="sm">
                                 Reschedule

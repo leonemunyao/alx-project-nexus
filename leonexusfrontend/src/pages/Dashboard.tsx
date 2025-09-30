@@ -52,7 +52,7 @@ const Dashboard = () => {
     setDealer({
       name: `${user.first_name} ${user.last_name}`,
       email: user.email,
-      phone: undefined // You might want to fetch this from the dealer profile
+      phone: undefined
     });
 
     // Load dummy cars data
