@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import AddCarDialog from "@/components/AddCarDialog";
 import EditCarDialog from "@/components/EditCarDialog";
 
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [editingCar, setEditingCar] = useState<Car | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { logout } = useAuth();
 
   useEffect(() => {
     // Check if user is logged in and is a dealer
@@ -95,13 +97,22 @@ const Dashboard = () => {
     setCars(dummyCars);
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("dealer");
-    toast({
-      title: "Logged out successfully",
-      description: "You have been signed out of your account",
-    });
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been signed out of your account",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error('Logout failed:', error);
+      toast({
+        title: "Logout failed",
+        description: "There was an error signing you out",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAddCar = (carData: Omit<Car, "id">) => {

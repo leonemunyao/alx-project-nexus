@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Buyer {
@@ -53,6 +54,7 @@ const BuyerDashboard = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { logout } = useAuth();
 
   useEffect(() => {
     // Check if buyer is logged in
@@ -142,13 +144,22 @@ const BuyerDashboard = () => {
     setBookings(dummyBookings);
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("buyer");
-    toast({
-      title: "Logged out successfully",
-      description: "You have been signed out of your account",
-    });
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been signed out of your account",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error('Logout failed:', error);
+      toast({
+        title: "Logout failed",
+        description: "There was an error signing you out",
+        variant: "destructive",
+      });
+    }
   };
 
   const getPaymentStatusColor = (status: Payment["status"]) => {
