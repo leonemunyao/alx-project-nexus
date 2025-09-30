@@ -38,8 +38,18 @@ export interface Category {
 
 export interface Car {
   id: number;
-  dealer: number;
-  category: number | null;
+  dealer: number | {
+    id: number;
+    first_name: string;
+    last_name: string;
+    phone: string;
+    address: string;
+  };
+  category: number | {
+    id: number;
+    name: string;
+    slug: string;
+  } | null;
   title: string;
   make: string;
   model: string;
@@ -54,6 +64,10 @@ export interface Car {
   published: boolean;
   created_at: string;
   images?: CarImage[]; // Optional, might be included in some responses
+  reviews?: Review[]; // Optional, might be included in some responses
+  average_rating?: number;
+  review_count?: number;
+  is_favorited?: boolean;
 }
 
 export interface CarImage {
@@ -108,6 +122,26 @@ const handleApiResponse = async (response: Response) => {
 
 // Authentication API Functions
 export const authApi = {
+  // Register user
+  register: async (userData: {
+    username: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    password: string;
+    role: 'BUYER' | 'DEALER';
+  }): Promise<{ message: string }> => {
+    const response = await fetch(`${API_BASE_URL}/auth/register/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    return handleApiResponse(response);
+  },
+
   // Login user
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await fetch(`${API_BASE_URL}/auth/login/`, {
@@ -357,6 +391,244 @@ export const dealerCarsApi = {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || errorData.message || `HTTP error! status: ${response.status}`);
     }
+  },
+};
+
+// Public Cars API Functions
+export const carsApi = {
+  // Get all cars with filters
+  getCars: async (filters?: {
+    make?: string;
+    model?: string;
+    year?: number;
+    min_price?: number;
+    max_price?: number;
+    location?: string;
+    fuel_type?: string;
+    transmission?: string;
+    category?: number;
+    search?: string;
+    ordering?: string;
+  }): Promise<{ cars: Car[]; count: number; next: string | null; previous: string | null }> => {
+    const params = new URLSearchParams();
+    
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, value.toString());
+        }
+      });
+    }
+
+    const response = await fetch(`${API_BASE_URL}/cars/?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await handleApiResponse(response);
+    return {
+      cars: data.results || data,
+      count: data.count || (Array.isArray(data) ? data.length : 0),
+      next: data.next || null,
+      previous: data.previous || null,
+    };
+  },
+
+  // Get car details
+  getCarDetails: async (carId: number): Promise<Car> => {
+    const response = await fetch(`${API_BASE_URL}/cars/${carId}/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return handleApiResponse(response);
+  },
+};
+
+// Reviews API Functions
+export interface Review {
+  id: number;
+  user: {
+    id: number;
+    username: string;
+    first_name: string;
+    last_name: string;
+  };
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
+export const reviewsApi = {
+  // Get reviews for a car
+  getCarReviews: async (carId: number): Promise<Review[]> => {
+    const response = await fetch(`${API_BASE_URL}/cars/${carId}/reviews/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await handleApiResponse(response);
+    return Array.isArray(data) ? data : data.results || [];
+  },
+
+  // Create a review
+  createReview: async (carId: number, reviewData: {
+    rating: number;
+    comment: string;
+  }): Promise<Review> => {
+    const response = await fetch(`${API_BASE_URL}/cars/${carId}/reviews/create/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(reviewData),
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Update a review
+  updateReview: async (reviewId: number, reviewData: {
+    rating: number;
+    comment: string;
+  }): Promise<Review> => {
+    const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(reviewData),
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Delete a review
+  deleteReview: async (reviewId: number): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || errorData.message || `HTTP error! status: ${response.status}`);
+    }
+  },
+};
+
+// Favorites API Functions
+export interface Favorite {
+  id: number;
+  car: Car;
+  created_at: string;
+}
+
+export const favoritesApi = {
+  // Get user's favorites
+  getFavorites: async (): Promise<Favorite[]> => {
+    const response = await fetch(`${API_BASE_URL}/favorites/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await handleApiResponse(response);
+    return Array.isArray(data) ? data : data.results || [];
+  },
+
+  // Add to favorites
+  addFavorite: async (carId: number): Promise<Favorite> => {
+    const response = await fetch(`${API_BASE_URL}/favorites/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify({ car: carId }),
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Remove from favorites
+  removeFavorite: async (favoriteId: number): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/favorites/${favoriteId}/`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || errorData.message || `HTTP error! status: ${response.status}`);
+    }
+  },
+
+  // Toggle favorite (convenience method)
+  toggleFavorite: async (carId: number): Promise<{ isFavorited: boolean; favoriteId?: number }> => {
+    const response = await fetch(`${API_BASE_URL}/cars/${carId}/toggle-favorite/`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await handleApiResponse(response);
+    return data;
+  },
+};
+
+// Profile API Functions
+export const profilesApi = {
+  // Get dealer profile
+  getDealerProfile: async (): Promise<DealerProfile> => {
+    const response = await fetch(`${API_BASE_URL}/dealers/profile/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Update dealer profile
+  updateDealerProfile: async (profileData: Partial<DealerProfile>): Promise<DealerProfile> => {
+    const response = await fetch(`${API_BASE_URL}/dealers/profile/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(profileData),
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Get buyer profile
+  getBuyerProfile: async (): Promise<BuyerProfile> => {
+    const response = await fetch(`${API_BASE_URL}/buyers/profile/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Update buyer profile
+  updateBuyerProfile: async (profileData: Partial<BuyerProfile>): Promise<BuyerProfile> => {
+    const response = await fetch(`${API_BASE_URL}/buyers/profile/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(profileData),
+    });
+
+    return handleApiResponse(response);
   },
 };
 

@@ -1,148 +1,60 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  User,
-  CreditCard,
-  Calendar,
-  LogOut,
-  Car,
-  MapPin,
-  Clock,
-  Download,
-  Edit,
-  Phone,
-  Mail,
-  CheckCircle
-} from "lucide-react";
+import { Car, Heart, LogOut, BarChart3, TrendingUp, Users, Star, Search, Filter, Eye, Calendar, MapPin, Gauge, Fuel, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface Buyer {
-  name: string;
-  email: string;
-  phone?: string;
-  userType: string;
-}
-
-interface Payment {
-  id: string;
-  carModel: string;
-  amount: number;
-  date: string;
-  status: "completed" | "pending" | "failed";
-  receiptUrl: string;
-}
-
-interface Booking {
-  id: string;
-  carModel: string;
-  dealerName: string;
-  dealerPhone: string;
-  date: string;
-  time: string;
-  location: string;
-  status: "confirmed" | "pending" | "completed" | "cancelled";
-}
+import { favoritesApi, carsApi, reviewsApi, Favorite, Car as CarType, Review } from "@/services/api";
+import ProfileDialog from "@/components/ProfileDialog";
+import Header from "@/components/Header";
 
 const BuyerDashboard = () => {
-  const [buyer, setBuyer] = useState<Buyer | null>(null);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [recentCars, setRecentCars] = useState<CarType[]>([]);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
 
   useEffect(() => {
-    // Check if buyer is logged in
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      navigate("/signin");
-      return;
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load favorites
+      const favoritesData = await favoritesApi.getFavorites();
+      setFavorites(favoritesData);
+      
+      // Load recent cars (latest 6 cars)
+      const carsResponse = await carsApi.getCars({ ordering: "-created_at" });
+      setRecentCars(carsResponse.cars.slice(0, 6));
+      
+      // Load user reviews (if any)
+      // Note: This would require a user-specific reviews endpoint
+      // For now, we'll simulate this
+      setUserReviews([]);
+      
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-
-    const user = JSON.parse(userData);
-    if (user.role !== 'BUYER') {
-      navigate("/signin");
-      return;
-    }
-
-    // Set buyer data from the user data
-    setBuyer({
-      name: `${user.first_name} ${user.last_name}`,
-      email: user.email,
-      phone: undefined,
-      userType: user.role
-    });
-
-    // Load dummy payments data
-    const dummyPayments: Payment[] = [
-      {
-        id: "1",
-        carModel: "2022 Toyota Camry",
-        amount: 28000,
-        date: "2024-01-15",
-        status: "completed",
-        receiptUrl: "#"
-      },
-      {
-        id: "2",
-        carModel: "2021 Honda Accord",
-        amount: 26500,
-        date: "2024-01-10",
-        status: "completed",
-        receiptUrl: "#"
-      },
-      {
-        id: "3",
-        carModel: "2023 BMW X5",
-        amount: 5000,
-        date: "2024-01-20",
-        status: "pending",
-        receiptUrl: "#"
-      },
-    ];
-
-    // Load dummy bookings data
-    const dummyBookings: Booking[] = [
-      {
-        id: "1",
-        carModel: "2023 Mercedes C-Class",
-        dealerName: "Premium Motors",
-        dealerPhone: "+1 (555) 123-4567",
-        date: "2024-01-25",
-        time: "10:00 AM",
-        location: "123 Main St, Downtown",
-        status: "confirmed"
-      },
-      {
-        id: "2",
-        carModel: "2022 Audi A4",
-        dealerName: "Elite Cars",
-        dealerPhone: "+1 (555) 987-6543",
-        date: "2024-01-28",
-        time: "2:00 PM",
-        location: "456 Oak Ave, Uptown",
-        status: "pending"
-      },
-      {
-        id: "3",
-        carModel: "2021 Lexus ES",
-        dealerName: "Luxury Auto",
-        dealerPhone: "+1 (555) 456-7890",
-        date: "2024-01-18",
-        time: "11:30 AM",
-        location: "789 Pine Rd, Midtown",
-        status: "completed"
-      },
-    ];
-
-    setPayments(dummyPayments);
-    setBookings(dummyBookings);
-  }, [navigate]);
+  };
 
   const handleLogout = async () => {
     try {
@@ -162,240 +74,354 @@ const BuyerDashboard = () => {
     }
   };
 
-  const getPaymentStatusColor = (status: Payment["status"]) => {
-    switch (status) {
-      case "completed": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "pending": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-      case "failed": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+  const handleRemoveFavorite = async (favoriteId: number) => {
+    try {
+      await favoritesApi.removeFavorite(favoriteId);
+      setFavorites(prev => prev.filter(fav => fav.id !== favoriteId));
+      toast({
+        title: "Removed from Favorites",
+        description: "Car removed from your favorites.",
+      });
+    } catch (error) {
+      console.error('Failed to remove favorite:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove from favorites. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const getBookingStatusColor = (status: Booking["status"]) => {
-    switch (status) {
-      case "confirmed": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "pending": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-      case "completed": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "cancelled": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-    }
+  const formatPrice = (price: string) => {
+    return new Intl.NumberFormat('en-KE', {
+      style: 'currency',
+      currency: 'KES',
+      minimumFractionDigits: 0,
+    }).format(parseFloat(price));
   };
 
-  if (!buyer) {
-    return <div>Loading...</div>;
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`w-3 h-3 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+      />
+    ));
+  };
+
+  const filteredFavorites = favorites.filter(fav => 
+    fav.car.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    fav.car.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    fav.car.model.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading dashboard...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
-      {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <Header />
+      
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <header className="border-b border-border bg-background/95 backdrop-blur mb-8">
+          <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-gradient-gold rounded-lg flex items-center justify-center">
                 <Car className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">LeoNexus Buyer Portal</h1>
-                <p className="text-muted-foreground">Welcome back, {buyer.name}</p>
+                <h1 className="text-2xl font-bold text-foreground">Buyer Dashboard</h1>
+                <p className="text-muted-foreground">Welcome back, {user?.first_name || user?.username}</p>
               </div>
             </div>
-            <Button onClick={handleLogout} variant="outline" className="gap-2">
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button onClick={() => setIsProfileDialogOpen(true)} variant="outline" className="gap-2">
+                <User className="w-4 h-4" />
+                Profile
+              </Button>
+              <Button onClick={handleLogout} variant="outline" className="gap-2">
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </div>
           </div>
+        </header>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Favorites</CardTitle>
+              <Heart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{favorites.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Cars you've saved
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Reviews Written</CardTitle>
+              <Star className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{userReviews.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Reviews submitted
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Cars Viewed</CardTitle>
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">0</div>
+              <p className="text-xs text-muted-foreground">
+                Recently viewed
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Member Since</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                2024
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Years as member
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4" />
-              Payments
-            </TabsTrigger>
-            <TabsTrigger value="bookings" className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Test Drives
-            </TabsTrigger>
-          </TabsList>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Favorites Section */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-primary" />
+                    Your Favorites
+                  </CardTitle>
+                  <Button variant="outline" size="sm" onClick={() => navigate('/cars')}>
+                    Browse More Cars
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {favorites.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Heart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">No favorites yet</h3>
+                    <p className="text-muted-foreground mb-4">Start browsing cars and add them to your favorites</p>
+                    <Button onClick={() => navigate('/cars')}>
+                      Browse Cars
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Search Favorites */}
+                    <div className="mb-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Input
+                          placeholder="Search your favorites..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
 
-          {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-6">
+                    {/* Favorites List */}
+                    <div className="space-y-4">
+                      {filteredFavorites.map((favorite) => (
+                        <Card key={favorite.id} className="overflow-hidden">
+                          <div className="flex">
+                            <div className="relative w-32 h-24 flex-shrink-0">
+                              <img
+                                src={favorite.car.images && favorite.car.images.length > 0 ? favorite.car.images[0].image_url : "/placeholder.svg"}
+                                alt={`${favorite.car.make} ${favorite.car.model}`}
+                                className="w-full h-full object-cover cursor-pointer"
+                                onClick={() => navigate(`/cars/${favorite.car.id}`)}
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = "/placeholder.svg";
+                                }}
+                              />
+                            </div>
+                            
+                            <CardContent className="flex-1 p-4">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-lg mb-1 cursor-pointer hover:text-primary"
+                                      onClick={() => navigate(`/cars/${favorite.car.id}`)}>
+                                    {favorite.car.year} {favorite.car.make} {favorite.car.model}
+                                  </h3>
+                                  
+                                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mb-2">
+                                    <div className="flex items-center">
+                                      <Calendar className="w-3 h-3 mr-1" />
+                                      {favorite.car.year}
+                                    </div>
+                                    <div className="flex items-center">
+                                      <Gauge className="w-3 h-3 mr-1" />
+                                      {favorite.car.mileage ? `${favorite.car.mileage.toLocaleString()} km` : 'N/A'}
+                                    </div>
+                                    <div className="flex items-center">
+                                      <Fuel className="w-3 h-3 mr-1" />
+                                      {favorite.car.fuel_type}
+                                    </div>
+                                    <div className="flex items-center">
+                                      <MapPin className="w-3 h-3 mr-1" />
+                                      {favorite.car.location}
+                                    </div>
+                                  </div>
+
+                                  {favorite.car.average_rating && (
+                                    <div className="flex items-center space-x-1 mb-2">
+                                      {renderStars(Math.round(favorite.car.average_rating))}
+                                      <span className="text-sm text-muted-foreground">
+                                        ({favorite.car.review_count || 0})
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="text-right ml-4">
+                                  <div className="text-lg font-bold text-primary mb-2">
+                                    {formatPrice(favorite.car.price)}
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button size="sm" onClick={() => navigate(`/cars/${favorite.car.id}`)}>
+                                      View Details
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      onClick={() => handleRemoveFavorite(favorite.id)}
+                                    >
+                                      Remove
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Cars Section */}
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  My Profile
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  Latest Cars
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-4 flex-1">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Full Name</label>
-                        <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                          <User className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-foreground">{buyer.name}</span>
-                        </div>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentCars.map((car) => (
+                    <div key={car.id} className="flex gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
+                         onClick={() => navigate(`/cars/${car.id}`)}>
+                      <div className="relative w-16 h-12 flex-shrink-0">
+                        <img
+                          src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
+                          alt={`${car.make} ${car.model}`}
+                          className="w-full h-full object-cover rounded"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder.svg";
+                          }}
+                        />
                       </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Email Address</label>
-                        <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                          <Mail className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-foreground">{buyer.email}</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Phone Number</label>
-                        <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                          <Phone className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-foreground">{buyer.phone || "Not provided"}</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Account Type</label>
-                        <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                          <span className="text-foreground capitalize">{buyer.userType}</span>
-                        </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">
+                          {car.year} {car.make} {car.model}
+                        </h4>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {car.location}
+                        </p>
+                        <p className="text-sm font-semibold text-primary">
+                          {formatPrice(car.price)}
+                        </p>
                       </div>
                     </div>
-                  </div>
-
-                  <Button variant="outline" className="gap-2">
-                    <Edit className="w-4 h-4" />
-                    Edit Profile
+                  ))}
+                </div>
+                
+                <div className="mt-4 pt-4 border-t">
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/cars')}>
+                    View All Cars
                   </Button>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Payments Tab */}
-          <TabsContent value="payments" className="space-y-6">
-            <Card>
+            {/* Quick Actions */}
+            <Card className="mt-6">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5" />
-                  Payment History
-                </CardTitle>
+                <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {payments.map((payment) => (
-                    <Card key={payment.id} className="border-l-4 border-l-primary">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1">
-                            <h3 className="font-semibold text-foreground">{payment.carModel}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(payment.date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="font-bold text-lg">${payment.amount.toLocaleString()}</p>
-                              <Badge className={getPaymentStatusColor(payment.status)}>
-                                {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                              </Badge>
-                            </div>
-
-                            <Button variant="outline" size="sm" className="gap-2">
-                              <Download className="w-4 h-4" />
-                              Receipt
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+              <CardContent className="space-y-3">
+                <Button className="w-full justify-start" onClick={() => navigate('/cars')}>
+                  <Search className="w-4 h-4 mr-2" />
+                  Search Cars
+                </Button>
+                
+                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/cars')}>
+                  <Filter className="w-4 h-4 mr-2" />
+                  Browse by Category
+                </Button>
+                
+                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/cars')}>
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Find by Location
+                </Button>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
+        </div>
 
-          {/* Bookings Tab */}
-          <TabsContent value="bookings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Test Drive Bookings
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {bookings.map((booking) => (
-                    <Card key={booking.id} className="border-l-4 border-l-primary">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-2">
-                            <h3 className="font-semibold text-foreground">{booking.carModel}</h3>
-                            <div className="space-y-1 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-2">
-                                <Car className="w-4 h-4" />
-                                <span>{booking.dealerName}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Phone className="w-4 h-4" />
-                                <span>{booking.dealerPhone}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                <span>
-                                  {new Date(booking.date).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                  })}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Clock className="w-4 h-4" />
-                                <span>{booking.time}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4" />
-                                <span>{booking.location}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col items-end gap-2">
-                            <Badge className={getBookingStatusColor(booking.status)}>
-                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                            </Badge>
-
-                            {booking.status === "confirmed" && (
-                              <Button variant="outline" size="sm">
-                                Reschedule
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Profile Dialog */}
+        <ProfileDialog
+          isOpen={isProfileDialogOpen}
+          onClose={() => setIsProfileDialogOpen(false)}
+          userRole="BUYER"
+        />
       </div>
     </div>
   );

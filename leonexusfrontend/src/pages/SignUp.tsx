@@ -7,16 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import { authApi } from "@/services/api";
 import Header from "@/components/Header";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
-    phone: "",
+    first_name: "",
+    last_name: "",
     password: "",
     confirmPassword: "",
-    userType: "dealer",
+    role: "BUYER",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -31,10 +33,10 @@ const SignUp = () => {
     });
   };
 
-  const handleUserTypeChange = (value: string) => {
+  const handleRoleChange = (value: string) => {
     setFormData({
       ...formData,
-      userType: value,
+      role: value,
     });
   };
 
@@ -42,6 +44,7 @@ const SignUp = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    // Validation
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Password mismatch",
@@ -52,85 +55,135 @@ const SignUp = () => {
       return;
     }
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    if (formData.password.length < 8) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 8 characters long",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
 
-    // Create user account based on type
-    const newUser = {
-      email: formData.email,
-      password: formData.password,
-      name: formData.name,
-      phone: formData.phone,
-      userType: formData.userType,
-    };
+    try {
+      // Register user
+      const userData = {
+        username: formData.username,
+        email: formData.email,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        password: formData.password,
+        role: formData.role,
+      };
 
-    // Store user data in localStorage for demo purposes
-    const storageKey = formData.userType === "dealer" ? "dealer" : "buyer";
-    localStorage.setItem(storageKey, JSON.stringify(newUser));
-    
-    toast({
-      title: "Account created successfully!",
-      description: `Welcome to LeoNexus, ${formData.name}!`,
-    });
-    
-    // Navigate based on user type
-    const dashboardRoute = formData.userType === "dealer" ? "/dashboard" : "/buyer-dashboard";
-    navigate(dashboardRoute);
-    setIsLoading(false);
+      await authApi.register(userData);
+
+      toast({
+        title: "Account created successfully!",
+        description: "Please sign in with your credentials.",
+      });
+
+      // Redirect to sign in page
+      navigate("/signin");
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "An error occurred during registration. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
           <Card className="border-2 border-border/50 shadow-2xl">
             <CardHeader className="text-center pb-8">
               <CardTitle className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
-                Join LeoNexus
+                Create Account
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                Create your account and join our community
+                Join our car marketplace community
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent>
-              <form onSubmit={handleSignUp} className="space-y-4">
+              <form onSubmit={handleSignUp} className="space-y-6">
                 {/* User Type Selection */}
                 <div className="space-y-3">
-                  <Label>I am a</Label>
-                  <RadioGroup
-                    value={formData.userType}
-                    onValueChange={handleUserTypeChange}
-                    className="flex space-x-6"
-                  >
+                  <Label className="text-base font-medium">I want to:</Label>
+                  <RadioGroup value={formData.role} onValueChange={handleRoleChange} className="grid grid-cols-2 gap-4">
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="dealer" id="dealer" />
-                      <Label htmlFor="dealer" className="flex items-center space-x-2 cursor-pointer">
-                        <Car className="w-4 h-4" />
-                        <span>Dealer</span>
+                      <RadioGroupItem value="BUYER" id="buyer" />
+                      <Label htmlFor="buyer" className="flex items-center gap-2 cursor-pointer">
+                        <ShoppingCart className="w-4 h-4" />
+                        Buy Cars
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="buyer" id="buyer" />
-                      <Label htmlFor="buyer" className="flex items-center space-x-2 cursor-pointer">
-                        <ShoppingCart className="w-4 h-4" />
-                        <span>Buyer</span>
+                      <RadioGroupItem value="DEALER" id="dealer" />
+                      <Label htmlFor="dealer" className="flex items-center gap-2 cursor-pointer">
+                        <Car className="w-4 h-4" />
+                        Sell Cars
                       </Label>
                     </div>
                   </RadioGroup>
                 </div>
+
+                {/* Personal Information */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">First Name *</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input
+                        id="first_name"
+                        name="first_name"
+                        type="text"
+                        placeholder="John"
+                        value={formData.first_name}
+                        onChange={handleInputChange}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Last Name *</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input
+                        id="last_name"
+                        name="last_name"
+                        type="text"
+                        placeholder="Doe"
+                        value={formData.last_name}
+                        onChange={handleInputChange}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Username */}
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="username">Username *</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
-                      id="name"
-                      name="name"
+                      id="username"
+                      name="username"
                       type="text"
-                      placeholder="Enter your full name"
-                      value={formData.name}
+                      placeholder="johndoe"
+                      value={formData.username}
                       onChange={handleInputChange}
                       className="pl-10"
                       required
@@ -138,15 +191,16 @@ const SignUp = () => {
                   </div>
                 </div>
 
+                {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder="john@example.com"
                       value={formData.email}
                       onChange={handleInputChange}
                       className="pl-10"
@@ -155,32 +209,16 @@ const SignUp = () => {
                   </div>
                 </div>
 
+                {/* Password */}
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="Enter your phone number"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Password *</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Create a password"
+                      placeholder="Create a strong password"
                       value={formData.password}
                       onChange={handleInputChange}
                       className="pl-10 pr-10"
@@ -196,8 +234,9 @@ const SignUp = () => {
                   </div>
                 </div>
 
+                {/* Confirm Password */}
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
@@ -220,6 +259,7 @@ const SignUp = () => {
                   </div>
                 </div>
 
+                {/* Submit Button */}
                 <Button
                   type="submit"
                   className="w-full bg-gradient-gold hover:shadow-gold transition-all duration-300"

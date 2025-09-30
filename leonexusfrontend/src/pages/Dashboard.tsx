@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Car as CarIcon, Plus, Edit, Trash2, LogOut, BarChart3 } from "lucide-react";
+import { Car as CarIcon, Plus, Edit, Trash2, LogOut, BarChart3, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import EditCarDialog from "@/components/EditCarDialog";
 import ListCarDialog from "@/components/ListCarDialog";
+import ProfileDialog from "@/components/ProfileDialog";
 import { Car, dealerCarsApi } from "@/services/api";
 
 interface Dealer {
@@ -21,6 +22,7 @@ const Dashboard = () => {
   const [cars, setCars] = useState<Car[]>([]);
   const [editingCar, setEditingCar] = useState<Car | null>(null);
   const [isListCarDialogOpen, setIsListCarDialogOpen] = useState(false);
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -162,12 +164,16 @@ const Dashboard = () => {
                 <p className="text-muted-foreground">Welcome back, {dealer.name}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button onClick={handleLogout} variant="outline" className="gap-2">
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </div>
+                   <div className="flex items-center gap-3">
+                     <Button onClick={() => setIsProfileDialogOpen(true)} variant="outline" className="gap-2">
+                       <User className="w-4 h-4" />
+                       Profile
+                     </Button>
+                     <Button onClick={handleLogout} variant="outline" className="gap-2">
+                       <LogOut className="w-4 h-4" />
+                       Logout
+                     </Button>
+                   </div>
           </div>
         </div>
       </header>
@@ -258,12 +264,16 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {cars.map((car) => (
                   <Card key={car.id} className="overflow-hidden">
-                    <div className="aspect-video bg-muted relative">
-                      <img
-                        src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
-                        alt={`${car.make} ${car.model}`}
-                        className="w-full h-full object-cover"
-                      />
+                           <div className="aspect-video bg-muted relative">
+                             <img
+                               src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
+                               alt={`${car.make} ${car.model}`}
+                               className="w-full h-full object-cover"
+                               onError={(e) => {
+                                 const target = e.target as HTMLImageElement;
+                                 target.src = "/placeholder.svg";
+                               }}
+                             />
                       <Badge
                         className={`absolute top-2 right-2 ${car.published ? 'bg-green-500' : 'bg-yellow-500'}`}
                       >
@@ -316,16 +326,22 @@ const Dashboard = () => {
         onAdd={handleAddCar}
       />
 
-      {editingCar && (
-        <EditCarDialog
-          isOpen={!!editingCar}
-          onClose={() => setEditingCar(null)}
-          onEdit={handleEditCar}
-          car={editingCar}
-        />
-      )}
-    </div>
-  );
-};
+             {editingCar && (
+               <EditCarDialog
+                 isOpen={!!editingCar}
+                 onClose={() => setEditingCar(null)}
+                 onEdit={handleEditCar}
+                 car={editingCar}
+               />
+             )}
 
-export default Dashboard;
+             <ProfileDialog
+               isOpen={isProfileDialogOpen}
+               onClose={() => setIsProfileDialogOpen(false)}
+               userRole="DEALER"
+             />
+           </div>
+         );
+       };
+
+       export default Dashboard;
