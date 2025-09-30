@@ -60,13 +60,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         role: response.role,
       };
 
-      console.log('Login response:', response);
-      console.log('User data to store:', userData);
 
       authUtils.storeUser(userData, response.token);
       setUser(userData);
 
-      console.log('User stored successfully:', authUtils.getStoredUser());
     } catch (error) {
       console.error('Login failed:', error);
       throw error;

@@ -26,7 +26,6 @@ const SignIn = () => {
   // Effect to handle redirection after login
   useEffect(() => {
     if (isLoginSuccessful && user) {
-      console.log('User logged in:', user);
 
       // Navigate to the intended destination or appropriate dashboard based on user role
       if (from) {
@@ -34,13 +33,10 @@ const SignIn = () => {
       } else {
         // Redirect based on user role after login
         if (user.role === 'DEALER') {
-          console.log('Redirecting dealer to dashboard');
           navigate('/dashboard', { replace: true });
         } else if (user.role === 'BUYER') {
-          console.log('Redirecting buyer to buyer dashboard');
           navigate('/buyer-dashboard', { replace: true });
         } else {
-          console.log('No role found, redirecting to home');
           navigate('/', { replace: true });
         }
       }
