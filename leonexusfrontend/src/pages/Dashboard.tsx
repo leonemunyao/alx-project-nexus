@@ -35,14 +35,25 @@ const Dashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if dealer is logged in
-    const dealerData = localStorage.getItem("dealer");
-    if (!dealerData) {
+    // Check if user is logged in and is a dealer
+    const userData = localStorage.getItem("user");
+    if (!userData) {
       navigate("/signin");
       return;
     }
 
-    setDealer(JSON.parse(dealerData));
+    const user = JSON.parse(userData);
+    if (user.role !== 'DEALER') {
+      navigate("/signin");
+      return;
+    }
+
+    // Set dealer data from the user data
+    setDealer({
+      name: `${user.first_name} ${user.last_name}`,
+      email: user.email,
+      phone: undefined // You might want to fetch this from the dealer profile
+    });
 
     // Load dummy cars data
     const dummyCars: Car[] = [
@@ -107,7 +118,7 @@ const Dashboard = () => {
 
   const handleEditCar = (carData: Omit<Car, "id">) => {
     if (!editingCar) return;
-    
+
     const updatedCar = { ...carData, id: editingCar.id };
     setCars(cars.map(car => car.id === editingCar.id ? updatedCar : car));
     toast({
@@ -174,7 +185,7 @@ const Dashboard = () => {
               <div className="text-2xl font-bold">{cars.length}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Available</CardTitle>
@@ -217,7 +228,7 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Your Car Inventory</CardTitle>
-              <Button 
+              <Button
                 onClick={() => setIsAddDialogOpen(true)}
                 className="bg-gradient-gold hover:shadow-gold transition-all duration-300 gap-2"
               >
@@ -231,12 +242,12 @@ const Dashboard = () => {
               {cars.map((car) => (
                 <Card key={car.id} className="overflow-hidden">
                   <div className="aspect-video bg-muted relative">
-                    <img 
-                      src={car.image} 
+                    <img
+                      src={car.image}
                       alt={`${car.make} ${car.model}`}
                       className="w-full h-full object-cover"
                     />
-                    <Badge 
+                    <Badge
                       className={`absolute top-2 right-2 ${getStatusColor(car.status)}`}
                     >
                       {car.status.charAt(0).toUpperCase() + car.status.slice(1)}
