@@ -144,8 +144,8 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
     };
 
     const carMakes = [
-        "Toyota", "Mercedes-Benz", "BMW", "Audi", "Volkswagen", "Nissan",
-        "Honda", "Ford", "Hyundai", "Kia", "Mazda", "Subaru", "Mitsubishi"
+        "Dodge", "Toyota", "Mercedes-Benz", "BMW", "Audi", "Volkswagen", "Lamborghini", "Nissan",
+        "Honda", "Ford", "Hyundai", "Kia", "Mazda", "Subaru", "Mitsubishi", "Ferrari", "Landrover"
     ];
 
     const conditions = [
