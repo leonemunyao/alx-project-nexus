@@ -103,20 +103,10 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <div className="flex items-center justify-between">
-                        <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-                            <Car className="w-6 h-6 text-primary" />
-                            List Your Vehicle
-                        </DialogTitle>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onClose}
-                            className="h-8 w-8 p-0 hover:bg-muted"
-                        >
-                            <X className="w-4 h-4" />
-                        </Button>
-                    </div>
+                    <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                        <Car className="w-6 h-6 text-primary" />
+                        List Your Vehicle
+                    </DialogTitle>
                     <p className="text-muted-foreground">
                         Fill in the details below to list your vehicle for sale
                     </p>
