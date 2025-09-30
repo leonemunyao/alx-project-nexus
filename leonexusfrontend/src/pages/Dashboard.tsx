@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import AddCarDialog from "@/components/AddCarDialog";
 import EditCarDialog from "@/components/EditCarDialog";
 
 interface Car {
@@ -30,7 +29,6 @@ interface Dealer {
 const Dashboard = () => {
   const [dealer, setDealer] = useState<Dealer | null>(null);
   const [cars, setCars] = useState<Car[]>([]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingCar, setEditingCar] = useState<Car | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -115,18 +113,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleAddCar = (carData: Omit<Car, "id">) => {
-    const newCar: Car = {
-      ...carData,
-      id: Date.now().toString(),
-    };
-    setCars([...cars, newCar]);
-    toast({
-      title: "Car added successfully",
-      description: `${carData.make} ${carData.model} has been added to your inventory`,
-    });
-  };
-
   const handleEditCar = (carData: Omit<Car, "id">) => {
     if (!editingCar) return;
 
@@ -177,12 +163,6 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Link to="/sell">
-                <Button className="bg-gradient-gold hover:shadow-gold transition-all duration-300 gap-2">
-                  <Plus className="w-4 h-4" />
-                  List Your Car
-                </Button>
-              </Link>
               <Button onClick={handleLogout} variant="outline" className="gap-2">
                 <LogOut className="w-4 h-4" />
                 Logout
@@ -247,13 +227,12 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Your Car Inventory</CardTitle>
-              <Button
-                onClick={() => setIsAddDialogOpen(true)}
-                className="bg-gradient-gold hover:shadow-gold transition-all duration-300 gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Add New Car
-              </Button>
+              <Link to="/sell">
+                <Button className="bg-gradient-gold hover:shadow-gold transition-all duration-300 gap-2">
+                  <Plus className="w-4 h-4" />
+                  List Your Car
+                </Button>
+              </Link>
             </div>
           </CardHeader>
           <CardContent>
@@ -310,12 +289,6 @@ const Dashboard = () => {
       </div>
 
       {/* Dialogs */}
-      <AddCarDialog
-        isOpen={isAddDialogOpen}
-        onClose={() => setIsAddDialogOpen(false)}
-        onAdd={handleAddCar}
-      />
-
       {editingCar && (
         <EditCarDialog
           isOpen={!!editingCar}

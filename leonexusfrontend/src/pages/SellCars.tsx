@@ -11,18 +11,18 @@ import lamborghiniBackground from "@/assets/lamborghini-4.jpg";
 
 const SellCars = () => {
   const [formData, setFormData] = useState({
+    category: "",
+    title: "",
     make: "",
     model: "",
     year: "",
     price: "",
     mileage: "",
-    fuelType: "",
+    fuel_type: "",
     transmission: "",
+    condition: "",
     location: "",
     description: "",
-    dealerName: "",
-    dealerContact: "",
-    dealerEmail: "",
   });
 
   const [images, setImages] = useState<File[]>([]);
@@ -43,17 +43,26 @@ const SellCars = () => {
   };
 
   const carMakes = [
-    "Toyota", "Mercedes-Benz", "BMW", "Audi", "Volkswagen", "Nissan", 
+    "Toyota", "Mercedes-Benz", "BMW", "Audi", "Volkswagen", "Nissan",
     "Honda", "Ford", "Hyundai", "Kia", "Mazda", "Subaru", "Mitsubishi"
   ];
 
+  const categories = [
+    "Sedan", "SUV", "Hatchback", "Coupe", "Convertible", "Truck",
+    "Van", "Wagon", "Crossover", "Luxury", "Sports Car"
+  ];
+
+  const conditions = [
+    "Excellent", "Very Good", "Good", "Fair", "Needs Work"
+  ];
+
   const locations = [
-    "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret", "Thika", 
+    "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret", "Thika",
     "Machakos", "Meru", "Nyeri", "Kakamega", "Malindi", "Garissa"
   ];
 
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 30 }, (_, i) => currentYear - i);
+  const years = Array.from({ length: currentYear - 2020 + 2 }, (_, i) => currentYear + 1 - i);
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -66,10 +75,10 @@ const SellCars = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95"></div>
       </div>
-      
+
       <div className="relative z-10">
         <Header />
-        
+
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             {/* Header Section */}
@@ -95,8 +104,35 @@ const SellCars = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category *</Label>
+                      <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Title *</Label>
+                      <Input
+                        id="title"
+                        placeholder="e.g., 2023 Toyota Camry Hybrid - Excellent Condition"
+                        value={formData.title}
+                        onChange={(e) => handleInputChange("title", e.target.value)}
+                        required
+                      />
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="make">Make *</Label>
                       <Select value={formData.make} onValueChange={(value) => handleInputChange("make", value)}>
@@ -192,18 +228,18 @@ const SellCars = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="fuelType">Fuel Type *</Label>
+                      <Label htmlFor="fuel_type">Fuel Type *</Label>
                       <div className="relative">
                         <Fuel className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                        <Select value={formData.fuelType} onValueChange={(value) => handleInputChange("fuelType", value)}>
+                        <Select value={formData.fuel_type} onValueChange={(value) => handleInputChange("fuel_type", value)}>
                           <SelectTrigger className="pl-10">
                             <SelectValue placeholder="Select fuel type" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="petrol">Petrol</SelectItem>
-                            <SelectItem value="diesel">Diesel</SelectItem>
-                            <SelectItem value="hybrid">Hybrid</SelectItem>
-                            <SelectItem value="electric">Electric</SelectItem>
+                            <SelectItem value="PETROL">Petrol</SelectItem>
+                            <SelectItem value="DIESEL">Diesel</SelectItem>
+                            <SelectItem value="HYBRID">Hybrid</SelectItem>
+                            <SelectItem value="ELECTRIC">Electric</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -218,23 +254,40 @@ const SellCars = () => {
                             <SelectValue placeholder="Select transmission" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="automatic">Automatic</SelectItem>
-                            <SelectItem value="manual">Manual</SelectItem>
-                            <SelectItem value="cvt">CVT</SelectItem>
+                            <SelectItem value="AUTOMATIC">Automatic</SelectItem>
+                            <SelectItem value="MANUAL">Manual</SelectItem>
+                            <SelectItem value="CVT">CVT</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="condition">Condition *</Label>
+                      <Select value={formData.condition} onValueChange={(value) => handleInputChange("condition", value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select condition" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {conditions.map((condition) => (
+                            <SelectItem key={condition} value={condition}>
+                              {condition}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description">Description *</Label>
                     <Textarea
                       id="description"
                       placeholder="Describe the condition, features, and any additional information about your vehicle..."
                       rows={4}
                       value={formData.description}
                       onChange={(e) => handleInputChange("description", e.target.value)}
+                      required
                     />
                   </div>
                 </CardContent>
@@ -275,58 +328,11 @@ const SellCars = () => {
                 </CardContent>
               </Card>
 
-              {/* Dealer Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Dealer Information</CardTitle>
-                  <CardDescription>
-                    Your contact details for potential buyers
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="dealerName">Dealer/Company Name *</Label>
-                      <Input
-                        id="dealerName"
-                        placeholder="e.g., Elite Motors"
-                        value={formData.dealerName}
-                        onChange={(e) => handleInputChange("dealerName", e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="dealerContact">Contact Number *</Label>
-                      <Input
-                        id="dealerContact"
-                        placeholder="e.g., +254 700 123 456"
-                        value={formData.dealerContact}
-                        onChange={(e) => handleInputChange("dealerContact", e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="dealerEmail">Email Address *</Label>
-                      <Input
-                        id="dealerEmail"
-                        type="email"
-                        placeholder="e.g., contact@elitemotors.co.ke"
-                        value={formData.dealerEmail}
-                        onChange={(e) => handleInputChange("dealerEmail", e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Submit Button */}
               <div className="flex justify-center pt-6">
-                <Button 
-                  type="submit" 
-                  size="lg" 
+                <Button
+                  type="submit"
+                  size="lg"
                   className="px-12 bg-gradient-gold hover:shadow-gold transition-all duration-300"
                 >
                   List My Vehicle
