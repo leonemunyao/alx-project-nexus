@@ -88,12 +88,11 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
     ];
 
     const conditions = [
-        "Excellent", "Very Good", "Good", "Fair", "Needs Work"
+        "New", "Ex-Uk", "Ex-Japan"
     ];
 
     const locations = [
-        "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret", "Thika",
-        "Machakos", "Meru", "Nyeri", "Kakamega", "Malindi", "Garissa"
+        "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Thika"
     ];
 
     const currentYear = new Date().getFullYear();
