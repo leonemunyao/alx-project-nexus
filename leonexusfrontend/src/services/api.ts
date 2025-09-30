@@ -180,8 +180,17 @@ export const categoriesApi = {
       },
     });
 
-    const data: PaginatedResponse<Category> = await handleApiResponse(response);
-    return data.results; // Return just the results array
+    const data = await handleApiResponse(response);
+    
+    // Handle both paginated and direct array responses
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data && Array.isArray(data.results)) {
+      return data.results;
+    } else {
+      console.error('Unexpected categories response format:', data);
+      return [];
+    }
   },
 };
 

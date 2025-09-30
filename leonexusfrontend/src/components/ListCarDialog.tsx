@@ -45,15 +45,15 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
                 try {
                     const fetchedCategories = await categoriesApi.getCategories();
                     console.log('Fetched categories:', fetchedCategories); // Debug log
-                    // Ensure we always have an array
-                    if (Array.isArray(fetchedCategories)) {
-                        setCategories(fetchedCategories);
-                    } else {
-                        console.error('Categories response is not an array:', fetchedCategories);
-                        setCategories([]);
+                    
+                    // The API function now handles the response format internally
+                    // and always returns an array, so we can safely set it
+                    setCategories(fetchedCategories);
+                    
+                    if (fetchedCategories.length === 0) {
                         toast({
-                            title: "Error",
-                            description: "Invalid categories data received. Please try again.",
+                            title: "No Categories",
+                            description: "No categories are available at the moment.",
                             variant: "destructive",
                         });
                     }
