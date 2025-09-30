@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoginSuccessful, setIsLoginSuccessful] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -21,6 +22,32 @@ const SignIn = () => {
 
   // Get the intended destination from location state or default to appropriate dashboard
   const from = location.state?.from?.pathname;
+
+  // Effect to handle redirection after login
+  useEffect(() => {
+    if (isLoginSuccessful && user) {
+      console.log('User logged in:', user);
+
+      // Navigate to the intended destination or appropriate dashboard based on user role
+      if (from) {
+        navigate(from, { replace: true });
+      } else {
+        // Redirect based on user role after login
+        if (user.role === 'DEALER') {
+          console.log('Redirecting dealer to dashboard');
+          navigate('/dashboard', { replace: true });
+        } else if (user.role === 'BUYER') {
+          console.log('Redirecting buyer to buyer dashboard');
+          navigate('/buyer-dashboard', { replace: true });
+        } else {
+          console.log('No role found, redirecting to home');
+          navigate('/', { replace: true });
+        }
+      }
+
+      setIsLoginSuccessful(false); // Reset the flag
+    }
+  }, [isLoginSuccessful, user, navigate, from]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,30 +63,15 @@ const SignIn = () => {
 
     try {
       await login({ username: email, password });
-      
+
       toast({
         title: "Welcome back!",
         description: "Successfully signed in to your account",
       });
 
-      // Navigate to the intended destination or appropriate dashboard based on user role
-      if (from) {
-        navigate(from, { replace: true });
-      } else {
-        // Redirect based on user role after login
-        const currentUser = authUtils.getStoredUser();
-        
-        if (currentUser?.role === 'DEALER') {
-          // Force navigation to dealer dashboard
-          window.location.href = '/dashboard';
-        } else if (currentUser?.role === 'BUYER') {
-          // Force navigation to buyer dashboard
-          window.location.href = '/buyer-dashboard';
-        } else {
-          // Fallback to home page
-          navigate('/', { replace: true });
-        }
-      }
+      // Set flag to trigger navigation in useEffect
+      setIsLoginSuccessful(true);
+
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -73,7 +85,7 @@ const SignIn = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
           <Card className="border-2 border-border/50 shadow-2xl">
@@ -85,7 +97,7 @@ const SignIn = () => {
                 Sign in to your account
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent>
               <form onSubmit={handleSignIn} className="space-y-6">
                 <div className="space-y-2">

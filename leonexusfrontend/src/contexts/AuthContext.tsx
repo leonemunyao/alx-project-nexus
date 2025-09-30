@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       const response: AuthResponse = await authApi.login(credentials);
-      
+
       const userData: User = {
         id: response.user_id,
         username: response.username,
@@ -60,8 +60,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         role: response.role,
       };
 
+      console.log('Login response:', response);
+      console.log('User data to store:', userData);
+
       authUtils.storeUser(userData, response.token);
       setUser(userData);
+
+      console.log('User stored successfully:', authUtils.getStoredUser());
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
