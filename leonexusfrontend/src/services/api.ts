@@ -36,6 +36,34 @@ export interface Category {
   created_at: string;
 }
 
+export interface Car {
+  id: number;
+  dealer: number;
+  category: number | null;
+  title: string;
+  make: string;
+  model: string;
+  location: string;
+  year: number;
+  price: string; // Decimal field comes as string from API
+  mileage: number | null;
+  transmission: string;
+  fuel_type: string;
+  condition: string;
+  description: string;
+  published: boolean;
+  created_at: string;
+  images?: CarImage[]; // Optional, might be included in some responses
+}
+
+export interface CarImage {
+  id: number;
+  car: number;
+  image: string;
+  order: number;
+  created_at: string;
+}
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
@@ -181,7 +209,7 @@ export const categoriesApi = {
     });
 
     const data = await handleApiResponse(response);
-    
+
     // Handle both paginated and direct array responses
     if (Array.isArray(data)) {
       return data;
@@ -189,6 +217,29 @@ export const categoriesApi = {
       return data.results;
     } else {
       console.error('Unexpected categories response format:', data);
+      return [];
+    }
+  },
+};
+
+// Dealer Cars API Functions
+export const dealerCarsApi = {
+  // Get dealer's cars
+  getCars: async (): Promise<Car[]> => {
+    const response = await fetch(`${API_BASE_URL}/dealers/cars/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await handleApiResponse(response);
+
+    // Handle both paginated and direct array responses
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data && Array.isArray(data.results)) {
+      return data.results;
+    } else {
+      console.error('Unexpected cars response format:', data);
       return [];
     }
   },

@@ -1,25 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Car, Plus, Edit, Trash2, LogOut, BarChart3 } from "lucide-react";
+import { Car as CarIcon, Plus, Edit, Trash2, LogOut, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import EditCarDialog from "@/components/EditCarDialog";
+// import EditCarDialog from "@/components/EditCarDialog"; // TODO: Update to work with new Car API interface
 import ListCarDialog from "@/components/ListCarDialog";
-
-interface Car {
-  id: string;
-  make: string;
-  model: string;
-  year: number;
-  price: number;
-  image: string;
-  mileage: number;
-  condition: string;
-  status: "available" | "sold" | "pending";
-}
+import { Car, dealerCarsApi } from "@/services/api";
 
 interface Dealer {
   name: string;
@@ -30,8 +19,9 @@ interface Dealer {
 const Dashboard = () => {
   const [dealer, setDealer] = useState<Dealer | null>(null);
   const [cars, setCars] = useState<Car[]>([]);
-  const [editingCar, setEditingCar] = useState<Car | null>(null);
+  // const [editingCar, setEditingCar] = useState<Car | null>(null); // TODO: Update EditCarDialog to work with new Car API interface
   const [isListCarDialogOpen, setIsListCarDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { logout } = useAuth();
@@ -57,45 +47,27 @@ const Dashboard = () => {
       phone: undefined
     });
 
-    // Load dummy cars data
-    const dummyCars: Car[] = [
-      {
-        id: "1",
-        make: "Toyota",
-        model: "Camry",
-        year: 2022,
-        price: 28000,
-        image: "/src/assets/prado-2019.jpg",
-        mileage: 15000,
-        condition: "Excellent",
-        status: "available"
-      },
-      {
-        id: "2",
-        make: "Honda",
-        model: "Accord",
-        year: 2021,
-        price: 26500,
-        image: "/src/assets/lamborghini-1.jpg",
-        mileage: 22000,
-        condition: "Good",
-        status: "sold"
-      },
-      {
-        id: "3",
-        make: "BMW",
-        model: "X5",
-        year: 2023,
-        price: 55000,
-        image: "/src/assets/lamborghini-2.jpg",
-        mileage: 5000,
-        condition: "Like New",
-        status: "pending"
-      },
-    ];
+    // Load cars from API
+    const loadCars = async () => {
+      try {
+        setLoading(true);
+        const carsData = await dealerCarsApi.getCars();
+        setCars(carsData);
+      } catch (error) {
+        console.error('Failed to load cars:', error);
+        toast({
+          title: "Failed to load cars",
+          description: "There was an error loading your car inventory",
+          variant: "destructive",
+        });
+        setCars([]); // Set empty array on error
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setCars(dummyCars);
-  }, [navigate]);
+    loadCars();
+  }, [navigate, toast]);
 
   const handleLogout = async () => {
     try {
@@ -116,6 +88,8 @@ const Dashboard = () => {
   };
 
   const handleEditCar = (carData: Omit<Car, "id">) => {
+    // TODO: Update to work with new Car API interface
+    /* 
     if (!editingCar) return;
 
     const updatedCar = { ...editingCar, ...carData };
@@ -125,34 +99,37 @@ const Dashboard = () => {
       title: "Car updated successfully",
       description: `${carData.make} ${carData.model} has been updated`,
     });
+    */
   };
 
-  const handleAddCar = (carData: any) => {
-    const newCar: Car = {
-      ...carData,
-      id: Date.now().toString(),
-      image: "/placeholder.svg", // Default image, would be replaced with actual uploaded images
-      status: "available" as const,
-    };
-    setCars([...cars, newCar]);
+  const handleAddCar = async (carData: any) => {
+    // Car was added via the API in the dialog, so we just need to refresh the list
+    try {
+      const carsData = await dealerCarsApi.getCars();
+      setCars(carsData);
+      toast({
+        title: "Car added successfully",
+        description: `${carData.make} ${carData.model} has been added to your inventory`,
+      });
+    } catch (error) {
+      console.error('Failed to refresh cars after adding:', error);
+      toast({
+        title: "Car added but list refresh failed",
+        description: "Please refresh the page to see your new car",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteCar = (carId: string) => {
-    const car = cars.find(c => c.id === carId);
-    setCars(cars.filter(c => c.id !== carId));
+    const carIdNum = parseInt(carId);
+    const car = cars.find(c => c.id === carIdNum);
+    setCars(cars.filter(c => c.id !== carIdNum));
     toast({
       title: "Car deleted",
       description: `${car?.make} ${car?.model} has been removed from your inventory`,
     });
-  };
-
-  const getStatusColor = (status: Car["status"]) => {
-    switch (status) {
-      case "available": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "sold": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
-      case "pending": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-    }
+    // TODO: Add API call to delete car from backend
   };
 
   if (!dealer) {
@@ -167,7 +144,7 @@ const Dashboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-gradient-gold rounded-lg flex items-center justify-center">
-                <Car className="w-6 h-6 text-primary-foreground" />
+                <CarIcon className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">LeoNexus Dashboard</h1>
@@ -190,7 +167,7 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Cars</CardTitle>
-              <Car className="h-4 w-4 text-muted-foreground" />
+              <CarIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{cars.length}</div>
@@ -199,24 +176,24 @@ const Dashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Available</CardTitle>
+              <CardTitle className="text-sm font-medium">Published</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {cars.filter(car => car.status === "available").length}
+                {cars.filter(car => car.published).length}
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sold</CardTitle>
+              <CardTitle className="text-sm font-medium">Drafts</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {cars.filter(car => car.status === "sold").length}
+              <div className="text-2xl font-bold text-yellow-600">
+                {cars.filter(car => !car.published).length}
               </div>
             </CardContent>
           </Card>
@@ -228,7 +205,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${cars.reduce((sum, car) => sum + car.price, 0).toLocaleString()}
+                ${cars.reduce((sum, car) => sum + parseFloat(car.price), 0).toLocaleString()}
               </div>
             </CardContent>
           </Card>
@@ -249,54 +226,75 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cars.map((car) => (
-                <Card key={car.id} className="overflow-hidden">
-                  <div className="aspect-video bg-muted relative">
-                    <img
-                      src={car.image}
-                      alt={`${car.make} ${car.model}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <Badge
-                      className={`absolute top-2 right-2 ${getStatusColor(car.status)}`}
-                    >
-                      {car.status.charAt(0).toUpperCase() + car.status.slice(1)}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-lg mb-2">
-                      {car.year} {car.make} {car.model}
-                    </h3>
-                    <div className="space-y-1 text-sm text-muted-foreground mb-4">
-                      <p>Price: ${car.price.toLocaleString()}</p>
-                      <p>Mileage: {car.mileage.toLocaleString()} miles</p>
-                      <p>Condition: {car.condition}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingCar(car)}
-                        className="flex-1 gap-1"
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading your cars...</p>
+                </div>
+              </div>
+            ) : cars.length === 0 ? (
+              <div className="text-center py-12">
+                <CarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">No cars listed yet</h3>
+                <p className="text-muted-foreground mb-4">Start by adding your first car to the inventory</p>
+                <Button onClick={() => setIsListCarDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  List Your First Car
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {cars.map((car) => (
+                  <Card key={car.id} className="overflow-hidden">
+                    <div className="aspect-video bg-muted relative">
+                      <img
+                        src={car.images && car.images.length > 0 ? car.images[0].image : "/placeholder.svg"}
+                        alt={`${car.make} ${car.model}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <Badge
+                        className={`absolute top-2 right-2 ${car.published ? 'bg-green-500' : 'bg-yellow-500'}`}
                       >
-                        <Edit className="w-3 h-3" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteCar(car.id)}
-                        className="flex-1 gap-1"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        Delete
-                      </Button>
+                        {car.published ? 'Published' : 'Draft'}
+                      </Badge>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-lg mb-2">
+                        {car.year} {car.make} {car.model}
+                      </h3>
+                      <div className="space-y-1 text-sm text-muted-foreground mb-4">
+                        <p>Price: ${parseFloat(car.price).toLocaleString()}</p>
+                        {car.mileage && <p>Mileage: {car.mileage.toLocaleString()} miles</p>}
+                        <p>Condition: {car.condition}</p>
+                        <p>Location: {car.location}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {/* TODO: Update EditCarDialog to work with new Car API interface */}
+                        {/* <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingCar(car)}
+                          className="flex-1 gap-1"
+                        >
+                          <Edit className="w-3 h-3" />
+                          Edit
+                        </Button> */}
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteCar(car.id.toString())}
+                          className="flex-1 gap-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -308,14 +306,15 @@ const Dashboard = () => {
         onAdd={handleAddCar}
       />
 
-      {editingCar && (
+      {/* TODO: Update EditCarDialog to work with new Car API interface */}
+      {/* {editingCar && (
         <EditCarDialog
           isOpen={!!editingCar}
           onClose={() => setEditingCar(null)}
           onEdit={handleEditCar}
           car={editingCar}
         />
-      )}
+      )} */}
     </div>
   );
 };
