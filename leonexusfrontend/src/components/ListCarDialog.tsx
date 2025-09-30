@@ -44,9 +44,22 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
                 setIsLoadingCategories(true);
                 try {
                     const fetchedCategories = await categoriesApi.getCategories();
-                    setCategories(fetchedCategories);
+                    console.log('Fetched categories:', fetchedCategories); // Debug log
+                    // Ensure we always have an array
+                    if (Array.isArray(fetchedCategories)) {
+                        setCategories(fetchedCategories);
+                    } else {
+                        console.error('Categories response is not an array:', fetchedCategories);
+                        setCategories([]);
+                        toast({
+                            title: "Error",
+                            description: "Invalid categories data received. Please try again.",
+                            variant: "destructive",
+                        });
+                    }
                 } catch (error) {
                     console.error('Failed to fetch categories:', error);
+                    setCategories([]); // Ensure categories is always an array
                     toast({
                         title: "Error",
                         description: "Failed to load categories. Please try again.",
@@ -153,7 +166,7 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
                                         <SelectContent>
                                             {isLoadingCategories ? (
                                                 <div className="px-2 py-1 text-sm text-muted-foreground">Loading categories...</div>
-                                            ) : categories.length === 0 ? (
+                                            ) : !Array.isArray(categories) || categories.length === 0 ? (
                                                 <div className="px-2 py-1 text-sm text-muted-foreground">No categories available</div>
                                             ) : (
                                                 categories.map((category) => (

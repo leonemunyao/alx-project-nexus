@@ -168,7 +168,9 @@ export const categoriesApi = {
   getCategories: async (): Promise<Category[]> => {
     const response = await fetch(`${API_BASE_URL}/categories/`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     return handleApiResponse(response);
