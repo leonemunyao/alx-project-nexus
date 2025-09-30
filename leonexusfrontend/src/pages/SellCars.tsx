@@ -43,8 +43,8 @@ const SellCars = () => {
   };
 
   const carMakes = [
-    "Toyota", "Mercedes-Benz", "BMW", "Audi", "Volkswagen", "Nissan",
-    "Honda", "Ford", "Hyundai", "Kia", "Mazda", "Subaru", "Mitsubishi"
+    "Dodge", "Toyota", "Mercedes-Benz", "BMW", "Audi", "Volkswagen", "Nissan", "Lamborghini",
+    "Porsche", "Ford", "Hyundai", "Kia", "Mazda", "Subaru", "Mitsubishi", "Ferrari", "Landrover"
   ];
 
   const categories = [
