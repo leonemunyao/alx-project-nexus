@@ -60,6 +60,7 @@ export interface CarImage {
   id: number;
   car: number;
   image: string;
+  image_url: string;
   order: number;
   created_at: string;
 }
@@ -258,22 +259,58 @@ export const dealerCarsApi = {
     transmission: string;
     fuel_type: string;
     category?: number | null;
-  }): Promise<Car> => {
+  }, images?: File[]): Promise<Car> => {
+    const formData = new FormData();
+    
+    // Add car data fields
+    Object.entries(carData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value.toString());
+      }
+    });
+    
+    // Add images if provided
+    if (images && images.length > 0) {
+      images.forEach((image, index) => {
+        formData.append('uploaded_images', image);
+      });
+    }
+
     const response = await fetch(`${API_BASE_URL}/dealers/cars/create/`, {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(carData),
+      headers: {
+        'Authorization': `Token ${authUtils.getStoredUser()?.token || ''}`,
+      },
+      body: formData,
     });
 
     return handleApiResponse(response);
   },
 
   // Update a car
-  updateCar: async (carId: number, carData: Partial<Car>): Promise<Car> => {
+  updateCar: async (carId: number, carData: Partial<Car>, images?: File[]): Promise<Car> => {
+    const formData = new FormData();
+    
+    // Add car data fields
+    Object.entries(carData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value.toString());
+      }
+    });
+    
+    // Add images if provided
+    if (images && images.length > 0) {
+      images.forEach((image, index) => {
+        formData.append('uploaded_images', image);
+      });
+    }
+
     const response = await fetch(`${API_BASE_URL}/dealers/cars/${carId}/`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(carData),
+      headers: {
+        'Authorization': `Token ${authUtils.getStoredUser()?.token || ''}`,
+      },
+      body: formData,
     });
 
     return handleApiResponse(response);

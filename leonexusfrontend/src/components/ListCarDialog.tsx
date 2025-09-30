@@ -104,7 +104,7 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
             };
 
             // Create the car via API
-            const createdCar = await dealerCarsApi.createCar(carData);
+            const createdCar = await dealerCarsApi.createCar(carData, images);
 
             toast({
                 title: "Car listed successfully!",

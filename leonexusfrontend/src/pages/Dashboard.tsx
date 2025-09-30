@@ -250,7 +250,7 @@ const Dashboard = () => {
                   <Card key={car.id} className="overflow-hidden">
                     <div className="aspect-video bg-muted relative">
                       <img
-                        src={car.images && car.images.length > 0 ? car.images[0].image : "/placeholder.svg"}
+                        src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
                         alt={`${car.make} ${car.model}`}
                         className="w-full h-full object-cover"
                       />

@@ -71,9 +71,19 @@ class CategorySerializer(serializers.ModelSerializer):
         return obj.car_set.filter(published=True).count()
 
 class CarImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    
     class Meta:
         model = CarImage
-        fields = ['id', 'image', 'order', 'created_at']
+        fields = ['id', 'image', 'image_url', 'order', 'created_at']
+    
+    def get_image_url(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer(read_only=True)

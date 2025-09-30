@@ -124,7 +124,7 @@ const EditCarDialog = ({ isOpen, onClose, onEdit, car }: EditCarDialogProps) => 
         category: formData.category ? parseInt(formData.category) : null,
       };
 
-      const updatedCar = await dealerCarsApi.updateCar(car.id, updateData);
+            const updatedCar = await dealerCarsApi.updateCar(car.id, updateData, images);
 
       toast({
         title: "Car updated successfully",
