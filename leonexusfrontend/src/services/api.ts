@@ -36,6 +36,13 @@ export interface Category {
   created_at: string;
 }
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export interface AuthResponse {
   token: string;
   user_id: number;
@@ -173,7 +180,8 @@ export const categoriesApi = {
       },
     });
 
-    return handleApiResponse(response);
+    const data: PaginatedResponse<Category> = await handleApiResponse(response);
+    return data.results; // Return just the results array
   },
 };
 
