@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Car, Plus, Edit, Trash2, LogOut, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -176,10 +176,18 @@ const Dashboard = () => {
                 <p className="text-muted-foreground">Welcome back, {dealer.name}</p>
               </div>
             </div>
-            <Button onClick={handleLogout} variant="outline" className="gap-2">
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-3">
+              <Link to="/sell">
+                <Button className="bg-gradient-gold hover:shadow-gold transition-all duration-300 gap-2">
+                  <Plus className="w-4 h-4" />
+                  List Your Car
+                </Button>
+              </Link>
+              <Button onClick={handleLogout} variant="outline" className="gap-2">
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>

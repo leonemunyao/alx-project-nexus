@@ -52,11 +52,10 @@ const Header = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(item.href)
+                className={`text-sm font-medium transition-colors hover:text-primary ${isActive(item.href)
                     ? "text-primary"
                     : "text-muted-foreground"
-                }`}
+                  }`}
               >
                 {item.name}
               </Link>
@@ -86,13 +85,6 @@ const Header = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {isDealer() && (
-                  <Link to="/sell">
-                    <Button size="sm" className="bg-gradient-gold hover:shadow-gold transition-all duration-300">
-                      List Your Car
-                    </Button>
-                  </Link>
-                )}
               </>
             ) : (
               <>
@@ -100,11 +92,6 @@ const Header = () => {
                   <Button variant="ghost" size="sm" className="text-muted-foreground">
                     <User className="w-4 h-4 mr-2" />
                     Sign In
-                  </Button>
-                </Link>
-                <Link to="/sell">
-                  <Button size="sm" className="bg-gradient-gold hover:shadow-gold transition-all duration-300">
-                    List Your Car
                   </Button>
                 </Link>
               </>
@@ -130,11 +117,10 @@ const Header = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${
-                    isActive(item.href)
+                  className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${isActive(item.href)
                       ? "bg-muted text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
+                    }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -143,8 +129,8 @@ const Header = () => {
               <div className="pt-4 space-y-2">
                 {isAuthenticated ? (
                   <>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="w-full justify-start"
                       onClick={() => {
                         navigate(isDealer() ? '/dashboard' : '/buyer-dashboard');
@@ -154,15 +140,8 @@ const Header = () => {
                       <Settings className="w-4 h-4 mr-2" />
                       Dashboard
                     </Button>
-                    {isDealer() && (
-                      <Link to="/sell" onClick={() => setIsMenuOpen(false)}>
-                        <Button className="w-full bg-gradient-gold">
-                          List Your Car
-                        </Button>
-                      </Link>
-                    )}
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="w-full justify-start text-red-600 hover:text-red-700"
                       onClick={() => {
                         handleLogout();
@@ -179,11 +158,6 @@ const Header = () => {
                       <Button variant="ghost" className="w-full justify-start">
                         <User className="w-4 h-4 mr-2" />
                         Sign In
-                      </Button>
-                    </Link>
-                    <Link to="/sell" onClick={() => setIsMenuOpen(false)}>
-                      <Button className="w-full bg-gradient-gold">
-                        List Your Car
                       </Button>
                     </Link>
                   </>
