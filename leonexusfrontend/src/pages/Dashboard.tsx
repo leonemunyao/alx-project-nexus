@@ -52,6 +52,10 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const carsData = await dealerCarsApi.getCars();
+        console.log('Dashboard: Cars data loaded:', carsData);
+        if (carsData.length > 0) {
+          console.log('Dashboard: First car description:', carsData[0].description);
+        }
         setCars(carsData);
       } catch (error) {
         console.error('Failed to load cars:', error);

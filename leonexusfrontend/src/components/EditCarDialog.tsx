@@ -24,17 +24,17 @@ const EditCarDialog = ({ isOpen, onClose, onEdit, car }: EditCarDialogProps) => 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     category: car.category?.toString() || "",
-    title: car.title,
-    make: car.make,
-    model: car.model,
-    year: car.year.toString(),
-    price: car.price,
+    title: car.title || "",
+    make: car.make || "",
+    model: car.model || "",
+    year: car.year?.toString() || "",
+    price: car.price || "",
     mileage: car.mileage?.toString() || "",
-    fuel_type: car.fuel_type,
-    transmission: car.transmission,
-    condition: car.condition,
-    location: car.location,
-    description: car.description,
+    fuel_type: car.fuel_type || "",
+    transmission: car.transmission || "",
+    condition: car.condition || "",
+    location: car.location || "",
+    description: car.description || "",
   });
 
   const [images, setImages] = useState<File[]>([]);
@@ -77,19 +77,22 @@ const EditCarDialog = ({ isOpen, onClose, onEdit, car }: EditCarDialogProps) => 
 
   // Update form data when car changes
   useEffect(() => {
+    console.log('EditCarDialog: Car data received:', car);
+    console.log('EditCarDialog: Description value:', car.description);
+    
     setFormData({
       category: car.category?.toString() || "",
-      title: car.title,
-      make: car.make,
-      model: car.model,
-      year: car.year.toString(),
-      price: car.price,
+      title: car.title || "",
+      make: car.make || "",
+      model: car.model || "",
+      year: car.year?.toString() || "",
+      price: car.price || "",
       mileage: car.mileage?.toString() || "",
-      fuel_type: car.fuel_type,
-      transmission: car.transmission,
-      condition: car.condition,
-      location: car.location,
-      description: car.description,
+      fuel_type: car.fuel_type || "",
+      transmission: car.transmission || "",
+      condition: car.condition || "",
+      location: car.location || "",
+      description: car.description || "",
     });
   }, [car]);
 
