@@ -260,62 +260,90 @@ export const dealerCarsApi = {
     fuel_type: string;
     category?: number | null;
   }, images?: File[]): Promise<Car> => {
-    const formData = new FormData();
+    const token = localStorage.getItem('authToken');
     
-    // Add car data fields
-    Object.entries(carData).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        formData.append(key, value.toString());
-      }
-    });
-    
-    // Add images if provided
+    // If there are images, use FormData, otherwise use JSON
     if (images && images.length > 0) {
+      const formData = new FormData();
+      
+      // Add car data fields
+      Object.entries(carData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          formData.append(key, value.toString());
+        }
+      });
+      
+      // Add images
       images.forEach((image, index) => {
         formData.append('uploaded_images', image);
       });
+
+      const response = await fetch(`${API_BASE_URL}/dealers/cars/create/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token || ''}`,
+        },
+        body: formData,
+      });
+
+      return handleApiResponse(response);
+    } else {
+      // No images, use JSON
+      const response = await fetch(`${API_BASE_URL}/dealers/cars/create/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token || ''}`,
+        },
+        body: JSON.stringify(carData),
+      });
+
+      return handleApiResponse(response);
     }
-
-    const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/dealers/cars/create/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${token || ''}`,
-      },
-      body: formData,
-    });
-
-    return handleApiResponse(response);
   },
 
   // Update a car
   updateCar: async (carId: number, carData: Partial<Car>, images?: File[]): Promise<Car> => {
-    const formData = new FormData();
+    const token = localStorage.getItem('authToken');
     
-    // Add car data fields
-    Object.entries(carData).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        formData.append(key, value.toString());
-      }
-    });
-    
-    // Add images if provided
+    // If there are images, use FormData, otherwise use JSON
     if (images && images.length > 0) {
+      const formData = new FormData();
+      
+      // Add car data fields
+      Object.entries(carData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          formData.append(key, value.toString());
+        }
+      });
+      
+      // Add images
       images.forEach((image, index) => {
         formData.append('uploaded_images', image);
       });
+
+      const response = await fetch(`${API_BASE_URL}/dealers/cars/${carId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token || ''}`,
+        },
+        body: formData,
+      });
+
+      return handleApiResponse(response);
+    } else {
+      // No images, use JSON
+      const response = await fetch(`${API_BASE_URL}/dealers/cars/${carId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token || ''}`,
+        },
+        body: JSON.stringify(carData),
+      });
+
+      return handleApiResponse(response);
     }
-
-    const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/dealers/cars/${carId}/`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Token ${token || ''}`,
-      },
-      body: formData,
-    });
-
-    return handleApiResponse(response);
   },
 
   // Delete a car

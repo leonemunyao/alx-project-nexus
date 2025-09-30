@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from rest_framework import generics, status, permissions, filters
+from rest_framework import generics, status, permissions, filters, parsers
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -262,6 +262,7 @@ class DealerCarCreateView(generics.CreateAPIView):
     """Create a new car listing for authenticated dealer"""
     serializer_class = CarCreateUpdateSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
 
     def perform_create(self, serializer):
         # Ensure user has dealer profile
@@ -274,6 +275,7 @@ class DealerCarDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a specific car for authenticated dealer"""
     serializer_class = CarDetailSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
 
     def get_queryset(self):
         if not hasattr(self.request.user, 'dealer_profile'):
