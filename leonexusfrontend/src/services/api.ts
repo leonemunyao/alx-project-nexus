@@ -276,10 +276,11 @@ export const dealerCarsApi = {
       });
     }
 
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE_URL}/dealers/cars/create/`, {
       method: 'POST',
       headers: {
-        'Authorization': `Token ${authUtils.getStoredUser()?.token || ''}`,
+        'Authorization': `Token ${token || ''}`,
       },
       body: formData,
     });
@@ -305,10 +306,11 @@ export const dealerCarsApi = {
       });
     }
 
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE_URL}/dealers/cars/${carId}/`, {
       method: 'PATCH',
       headers: {
-        'Authorization': `Token ${authUtils.getStoredUser()?.token || ''}`,
+        'Authorization': `Token ${token || ''}`,
       },
       body: formData,
     });
