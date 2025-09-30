@@ -87,10 +87,20 @@ const Dashboard = () => {
     }
   };
 
-  const handleEditCar = (updatedCar: Car) => {
-    // Update the car in the local state
-    setCars(cars.map(car => car.id === updatedCar.id ? updatedCar : car));
-    setEditingCar(null);
+  const handleEditCar = async (updatedCar: Car) => {
+    // Refresh the entire car list to ensure we get the latest data including images
+    try {
+      console.log('Updated car received from API:', updatedCar);
+      const carsData = await dealerCarsApi.getCars();
+      console.log('Refreshed cars data:', carsData);
+      setCars(carsData);
+      setEditingCar(null);
+    } catch (error) {
+      console.error('Failed to refresh cars after editing:', error);
+      // Fallback to just updating the local state
+      setCars(cars.map(car => car.id === updatedCar.id ? updatedCar : car));
+      setEditingCar(null);
+    }
   };
 
   const handleAddCar = async (carData: any) => {
