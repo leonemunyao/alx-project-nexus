@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { categoriesApi, Category } from "@/services/api";
+import { categoriesApi, Category, dealerCarsApi } from "@/services/api";
 
 interface ListCarDialogProps {
     isOpen: boolean;
@@ -83,37 +83,64 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Form submitted:", formData, images);
+        
+        try {
+            // Prepare data for API call
+            const carData = {
+                title: formData.title,
+                make: formData.make,
+                model: formData.model,
+                year: parseInt(formData.year),
+                price: formData.price,
+                mileage: formData.mileage ? parseInt(formData.mileage) : null,
+                location: formData.location,
+                condition: formData.condition,
+                description: formData.description,
+                transmission: formData.transmission,
+                fuel_type: formData.fuel_type,
+                category: formData.category ? parseInt(formData.category) : null,
+            };
 
-        // Call the onAdd callback if provided
-        if (onAdd) {
-            onAdd({ ...formData, images });
+            // Create the car via API
+            const createdCar = await dealerCarsApi.createCar(carData);
+
+            toast({
+                title: "Car listed successfully!",
+                description: `${formData.make} ${formData.model} has been added to your inventory.`,
+            });
+
+            // Call the onAdd callback if provided (for Dashboard to refresh the list)
+            if (onAdd) {
+                onAdd(createdCar);
+            }
+
+            // Reset form and close dialog
+            setFormData({
+                category: "",
+                title: "",
+                make: "",
+                model: "",
+                year: "",
+                price: "",
+                mileage: "",
+                fuel_type: "",
+                transmission: "",
+                condition: "",
+                location: "",
+                description: "",
+            });
+            setImages([]);
+            onClose();
+        } catch (error) {
+            console.error('Failed to create car:', error);
+            toast({
+                title: "Failed to list car",
+                description: "There was an error creating your car listing. Please try again.",
+                variant: "destructive",
+            });
         }
-
-        toast({
-            title: "Car listed successfully!",
-            description: "Your vehicle has been added to the inventory.",
-        });
-
-        // Reset form and close dialog
-        setFormData({
-            category: "",
-            title: "",
-            make: "",
-            model: "",
-            year: "",
-            price: "",
-            mileage: "",
-            fuel_type: "",
-            transmission: "",
-            condition: "",
-            location: "",
-            description: "",
-        });
-        setImages([]);
-        onClose();
     };
 
     const carMakes = [

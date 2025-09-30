@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-// import EditCarDialog from "@/components/EditCarDialog"; // TODO: Update to work with new Car API interface
+import EditCarDialog from "@/components/EditCarDialog";
 import ListCarDialog from "@/components/ListCarDialog";
 import { Car, dealerCarsApi } from "@/services/api";
 
@@ -19,7 +19,7 @@ interface Dealer {
 const Dashboard = () => {
   const [dealer, setDealer] = useState<Dealer | null>(null);
   const [cars, setCars] = useState<Car[]>([]);
-  // const [editingCar, setEditingCar] = useState<Car | null>(null); // TODO: Update EditCarDialog to work with new Car API interface
+  const [editingCar, setEditingCar] = useState<Car | null>(null);
   const [isListCarDialogOpen, setIsListCarDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -87,19 +87,10 @@ const Dashboard = () => {
     }
   };
 
-  const handleEditCar = (carData: Omit<Car, "id">) => {
-    // TODO: Update to work with new Car API interface
-    /* 
-    if (!editingCar) return;
-
-    const updatedCar = { ...editingCar, ...carData };
-    setCars(cars.map(car => car.id === editingCar.id ? updatedCar : car));
+  const handleEditCar = (updatedCar: Car) => {
+    // Update the car in the local state
+    setCars(cars.map(car => car.id === updatedCar.id ? updatedCar : car));
     setEditingCar(null);
-    toast({
-      title: "Car updated successfully",
-      description: `${carData.make} ${carData.model} has been updated`,
-    });
-    */
   };
 
   const handleAddCar = async (carData: any) => {
@@ -121,15 +112,25 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeleteCar = (carId: string) => {
+  const handleDeleteCar = async (carId: string) => {
     const carIdNum = parseInt(carId);
     const car = cars.find(c => c.id === carIdNum);
-    setCars(cars.filter(c => c.id !== carIdNum));
-    toast({
-      title: "Car deleted",
-      description: `${car?.make} ${car?.model} has been removed from your inventory`,
-    });
-    // TODO: Add API call to delete car from backend
+
+    try {
+      await dealerCarsApi.deleteCar(carIdNum);
+      setCars(cars.filter(c => c.id !== carIdNum));
+      toast({
+        title: "Car deleted",
+        description: `${car?.make} ${car?.model} has been removed from your inventory`,
+      });
+    } catch (error) {
+      console.error('Failed to delete car:', error);
+      toast({
+        title: "Failed to delete car",
+        description: "There was an error deleting the car",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!dealer) {
@@ -147,7 +148,7 @@ const Dashboard = () => {
                 <CarIcon className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">LeoNexus Dashboard</h1>
+                <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
                 <p className="text-muted-foreground">Welcome back, {dealer.name}</p>
               </div>
             </div>
@@ -270,8 +271,7 @@ const Dashboard = () => {
                         <p>Location: {car.location}</p>
                       </div>
                       <div className="flex gap-2">
-                        {/* TODO: Update EditCarDialog to work with new Car API interface */}
-                        {/* <Button
+                        <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setEditingCar(car)}
@@ -279,7 +279,7 @@ const Dashboard = () => {
                         >
                           <Edit className="w-3 h-3" />
                           Edit
-                        </Button> */}
+                        </Button>
                         <Button
                           variant="destructive"
                           size="sm"
@@ -306,15 +306,14 @@ const Dashboard = () => {
         onAdd={handleAddCar}
       />
 
-      {/* TODO: Update EditCarDialog to work with new Car API interface */}
-      {/* {editingCar && (
+      {editingCar && (
         <EditCarDialog
           isOpen={!!editingCar}
           onClose={() => setEditingCar(null)}
           onEdit={handleEditCar}
           car={editingCar}
         />
-      )} */}
+      )}
     </div>
   );
 };

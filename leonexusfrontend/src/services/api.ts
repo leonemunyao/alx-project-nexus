@@ -243,6 +243,54 @@ export const dealerCarsApi = {
       return [];
     }
   },
+
+  // Create a new car
+  createCar: async (carData: {
+    title: string;
+    make: string;
+    model: string;
+    year: number;
+    price: string;
+    mileage?: number | null;
+    location: string;
+    condition: string;
+    description: string;
+    transmission: string;
+    fuel_type: string;
+    category?: number | null;
+  }): Promise<Car> => {
+    const response = await fetch(`${API_BASE_URL}/dealers/cars/create/`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(carData),
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Update a car
+  updateCar: async (carId: number, carData: Partial<Car>): Promise<Car> => {
+    const response = await fetch(`${API_BASE_URL}/dealers/cars/${carId}/`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(carData),
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Delete a car
+  deleteCar: async (carId: number): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/dealers/cars/${carId}/`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || errorData.message || `HTTP error! status: ${response.status}`);
+    }
+  },
 };
 
 // Utility functions for authentication state
