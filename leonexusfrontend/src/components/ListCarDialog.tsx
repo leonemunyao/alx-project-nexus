@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { categoriesApi, Category } from "@/services/api";
 
@@ -128,9 +128,9 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
                         <Car className="w-6 h-6 text-primary" />
                         List Your Vehicle
                     </DialogTitle>
-                    <p className="text-muted-foreground">
+                    <DialogDescription className="text-muted-foreground">
                         Fill in the details below to list your vehicle for sale
-                    </p>
+                    </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -152,7 +152,9 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
                                         </SelectTrigger>
                                         <SelectContent>
                                             {isLoadingCategories ? (
-                                                <SelectItem value="" disabled>Loading categories...</SelectItem>
+                                                <div className="px-2 py-1 text-sm text-muted-foreground">Loading categories...</div>
+                                            ) : categories.length === 0 ? (
+                                                <div className="px-2 py-1 text-sm text-muted-foreground">No categories available</div>
                                             ) : (
                                                 categories.map((category) => (
                                                     <SelectItem key={category.id} value={category.id.toString()}>
