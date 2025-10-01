@@ -38,6 +38,9 @@ class DealerSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'first_name', 'last_name', 'phone', 'address', 'car_count']
     
     def get_car_count(self, obj):
+        # Use prefetched data if available to avoid N+1 queries
+        if hasattr(obj, '_prefetched_objects_cache') and 'cars' in obj._prefetched_objects_cache:
+            return len([car for car in obj._prefetched_objects_cache['cars'] if car.published])
         return obj.cars.filter(published=True).count()
 
 class DealerCreateSerializer(serializers.ModelSerializer):
@@ -152,7 +155,10 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'slug', 'car_count']
     
     def get_car_count(self, obj):
-        return obj.car_set.filter(published=True).count()
+        try:
+            return obj.car_set.filter(published=True).count()
+        except Exception:
+            return 0
 
 class CarImageSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -218,22 +224,31 @@ class DealerCarListSerializer(serializers.ModelSerializer):
         ]
     
     def get_primary_image(self, obj):
-        primary_image = obj.images.filter(order=0).first()
-        if primary_image:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(primary_image.image.url)
-            return primary_image.image.url
+        try:
+            primary_image = obj.images.filter(order=0).first()
+            if primary_image and primary_image.image:
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(primary_image.image.url)
+                return primary_image.image.url
+        except Exception:
+            pass
         return None
     
     def get_average_rating(self, obj):
-        reviews = obj.reviews.all()
-        if reviews:
-            return round(sum(review.rating for review in reviews) / len(reviews), 1)
+        try:
+            reviews = obj.reviews.all()
+            if reviews:
+                return round(sum(review.rating for review in reviews) / len(reviews), 1)
+        except Exception:
+            pass
         return 0
     
     def get_review_count(self, obj):
-        return obj.reviews.count()
+        try:
+            return obj.reviews.count()
+        except Exception:
+            return 0
 
 class CarDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for individual car views"""

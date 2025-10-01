@@ -205,7 +205,7 @@ class CarListCreateView(generics.ListCreateAPIView):
         if max_year:
             queryset = queryset.filter(year__lte=max_year)
             
-        return queryset.select_related('dealer', 'category').prefetch_related('images', 'reviews')
+        return queryset.select_related('dealer', 'category').prefetch_related('images', 'reviews', 'dealer__cars')
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
