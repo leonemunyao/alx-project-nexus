@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.db import models
+import cloudinary
 from .models import (
     User,
     Dealer,
@@ -313,10 +314,9 @@ class CarListSerializer(serializers.ModelSerializer):
         try:
             primary_image = obj.images.filter(order=0).first()
             if primary_image and primary_image.image:
-                request = self.context.get("request")
-                if request:
-                    return request.build_absolute_uri(primary_image.image.url)
-                return primary_image.image.url
+                # For CloudinaryField, obj.image.url should already be the full URL
+                # No need to build absolute URI as it's already absolute
+                return str(primary_image.image.url)
         except Exception:
             pass
         return None
