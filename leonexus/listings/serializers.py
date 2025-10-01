@@ -428,6 +428,12 @@ class CarCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer for creating and updating cars"""
 
     images = CarImageSerializer(many=True, read_only=True)
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+        allow_empty=True
+    )
 
     class Meta:
         model = Car
@@ -446,6 +452,7 @@ class CarCreateUpdateSerializer(serializers.ModelSerializer):
             "category",
             "published",
             "images",
+            "uploaded_images",
         ]
 
     def validate_year(self, value):
@@ -464,14 +471,36 @@ class CarCreateUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        uploaded_images = validated_data.pop('uploaded_images', [])
         car = Car.objects.create(**validated_data)
+        
+        # Handle image uploads
+        if uploaded_images:
+            for index, image in enumerate(uploaded_images):
+                CarImage.objects.create(car=car, image=image, order=index)
+        
         return car
 
     def update(self, instance, validated_data):
+        uploaded_images = validated_data.pop('uploaded_images', [])
+        
         # Update car fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+        
+        # Handle image uploads
+        if uploaded_images:
+            # Get the next available order number
+            existing_count = instance.images.count()
+            
+            for index, image in enumerate(uploaded_images):
+                CarImage.objects.create(
+                    car=instance,
+                    image=image,
+                    order=existing_count + index,
+                )
+        
         return instance
 
 
