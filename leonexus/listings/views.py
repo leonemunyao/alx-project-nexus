@@ -270,15 +270,7 @@ class DealerCarCreateView(generics.CreateAPIView):
             from rest_framework.exceptions import ValidationError
             raise ValidationError({'error': 'You must create a dealer profile first'})
         
-        car = serializer.save(dealer=self.request.user.dealer_profile)
-        
-        # Handle image uploads
-        uploaded_images = self.request.FILES.getlist('uploaded_images')
-        if uploaded_images:
-            for index, image in enumerate(uploaded_images):
-                CarImage.objects.create(car=car, image=image, order=index)
-        
-        return car
+        serializer.save(dealer=self.request.user.dealer_profile)
 
 class DealerCarDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a specific car for authenticated dealer"""
@@ -307,27 +299,9 @@ class DealerCarDetailView(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        
-        # Ensure dealer is set in the data
-        data = request.data.copy()
-        data['dealer'] = request.user.dealer_profile.id
-        
-        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        
-        # Handle image uploads
-        uploaded_images = request.FILES.getlist('uploaded_images')
-        if uploaded_images:
-            # Get the current max order
-            current_max_order = instance.images.aggregate(max_order=Max("order"))["max_order"] or -1
-            
-            for index, image in enumerate(uploaded_images):
-                CarImage.objects.create(
-                    car=instance,
-                    image=image,
-                    order=current_max_order + index + 1,
-                )
         
         # Return the updated instance using the detail serializer
         detail_serializer = CarDetailSerializer(instance, context={'request': request})
