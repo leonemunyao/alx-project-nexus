@@ -4,7 +4,7 @@
 
 ## ProDev Backend Engineering Program Overview
 
-The ProDev Backend program has equiped us with knowledge in different fiels,
+The ProDev Backend program has equiped us with knowledge in different fields,
 
 From `AI Prompting`, `Bash Piping`, `Database Design, Normalization, Optimization`, `SQL Joins`, `Python Decorators, Generators and Context Managers`, `Unit Testing`, `Django REST Framework` all the way to `Containerization(Docker and Kubernetes)` and `CI/CD Pipelines(Jenkins and Github Actions)`.
 
