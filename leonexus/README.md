@@ -27,11 +27,16 @@ A Django REST API backend for a car marketplace platform where dealers can list 
 
 ## Tech Stack
 
-- **Backend**: Django, Django REST Framework
-- **Database**: PostgreSQL (Production), SQLite (Development)
-- **Authentication**: Token-based authentication
-- **Image Handling**: Pillow for image processing
-- **Deployment**: Render (Backend), Neon (Database)
+## Tech Stack
+
+- **Django 5.2.6**: Web framework
+- **Django REST Framework**: API development
+- **PostgreSQL**: Database
+- **Cloudinary**: Cloud-based image storage and CDN
+- **Pillow**: Image processing
+- **python-decouple**: Environment variables
+- **JWT**: Authentication tokens
+- **Image Handling**: Cloudinary for cloud storage and Pillow for image processing
 
 ## API Endpoints
 
@@ -74,6 +79,9 @@ A Django REST API backend for a car marketplace platform where dealers can list 
 SECRET_KEY=your-secret-key
 DEBUG=True/False
 DATABASE_URL=postgresql://user:pass@host:port/db
+CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
+CLOUDINARY_API_KEY=your-cloudinary-api-key
+CLOUDINARY_API_SECRET=your-cloudinary-api-secret
 ```
 
 ## Project Structure

@@ -4,7 +4,16 @@
 
 ## ProDev Backend Engineering Program Overview
 
-The ProDev Backend Program is a great learning experience for any aspiring professional Back-End Engineer. In this program, different technologies are learnt, while working on different projects to apply the skills learnt.
+The ProDev ### 🌐 Deployment & Hosting
+
+The LeoNexus platform is deployed using modern cloud infrastructure for optimal performance and scalability:
+
+- **Backend API**: Hosted on **Render** for reliable Django REST Framework deployment
+- **Frontend Application**: Deployed on **Vercel** for fast global content delivery
+- **Database**: PostgreSQL database hosted on **Neon** for cloud-native data management
+- **Image Storage**: **Cloudinary** for cloud-based image storage, processing, and CDN delivery
+
+This cloud-first deployment strategy ensures high availability, automatic scaling, seamless CI/CD integration, and optimized image delivery worldwide.rogram is a great learning experience for any aspiring professional Back-End Engineer. In this program, different technologies are learnt, while working on different projects to apply the skills learnt.
 
 From `AI Prompting`, `Bash Piping`, `Database Design, Normalization, Optimization`, `SQL Joins`, `Python Decorators, Generators and Context Managers`, `Unit Testing`, `Django REST Framework` all the way to `Containerization(Docker and Kubernetes)` and `CI/CD Pipelines(Jenkins and Github Actions)`.
 
@@ -73,7 +82,8 @@ The project follows a **full-stack architecture** with clear separation of conce
 - **Framework**: Django with Django REST Framework
 - **Database**: PostgreSQL (Production) / SQLite (Development)  
 - **Authentication**: Token-based authentication with role management
-- **Image Handling**: Pillow for image processing and uploads
+- **Image Storage**: Cloudinary cloud-based image storage and CDN
+- **Image Processing**: Pillow for image manipulation
 
 **Frontend (leonexusfrontend/)**: React TypeScript SPA
 - **Framework**: React 18.3.1 with TypeScript
@@ -97,7 +107,7 @@ This cloud-first deployment strategy ensures high availability, automatic scalin
 #### For Car Dealers
 - **Inventory Management**: Complete CRUD operations for car listings
 - **Dealership Profiles**: Create comprehensive business profiles with specialties
-- **Image Gallery**: Multi-image upload support for vehicles
+- **Image Gallery**: Multi-image upload support with Cloudinary cloud storage for optimal performance
 
 #### For Car Buyers  
 - **Advanced Search**: Filter cars by make, model, year, price, and features

@@ -155,10 +155,9 @@ class DealershipSerializer(serializers.ModelSerializer):
 
     def get_avatar_url(self, obj):
         if obj.avatar:
-            request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.avatar.url)
-            return obj.avatar.url
+            # For CloudinaryField, obj.avatar.url should already be the full URL
+            # No need to build absolute URI as it's already absolute
+            return str(obj.avatar.url)
         return None
 
     def get_total_cars(self, obj):
@@ -250,10 +249,9 @@ class CarImageSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         if obj.image:
-            request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            return obj.image.url
+            # For CloudinaryField, obj.image.url should already be the full URL
+            # No need to build absolute URI as it's already absolute
+            return str(obj.image.url)
         return None
 
 
