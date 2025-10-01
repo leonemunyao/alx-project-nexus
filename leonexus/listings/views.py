@@ -307,21 +307,23 @@ class DealerCarDetailView(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        
+        # First, update the car data without images
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         
-        # Handle image uploads
+        # Then handle image uploads separately
         uploaded_images = request.FILES.getlist('uploaded_images')
         if uploaded_images:
-            # Get the current max order
-            current_max_order = instance.images.aggregate(max_order=Max("order"))["max_order"] or -1
+            # Get the next available order number
+            existing_count = instance.images.count()
             
             for index, image in enumerate(uploaded_images):
                 CarImage.objects.create(
                     car=instance,
                     image=image,
-                    order=current_max_order + index + 1,
+                    order=existing_count + index,  # Start after existing images
                 )
         
         # Return the updated instance using the detail serializer
