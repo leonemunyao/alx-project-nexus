@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Car as CarIcon, Plus, Edit, Trash2, LogOut, BarChart3, User } from "lucide-react";
+import { Car as CarIcon, Plus, Edit, Trash2, LogOut, BarChart3, User, Building2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import EditCarDialog from "@/components/EditCarDialog";
 import ListCarDialog from "@/components/ListCarDialog";
 import ProfileDialog from "@/components/ProfileDialog";
-import { Car, dealerCarsApi } from "@/services/api";
+import DealershipDialog from "@/components/DealershipDialog";
+import { Car, dealerCarsApi, dealershipApi, Dealership } from "@/services/api";
 
 interface Dealer {
   name: string;
@@ -20,10 +21,13 @@ interface Dealer {
 const Dashboard = () => {
   const [dealer, setDealer] = useState<Dealer | null>(null);
   const [cars, setCars] = useState<Car[]>([]);
+  const [dealership, setDealership] = useState<Dealership | null>(null);
   const [editingCar, setEditingCar] = useState<Car | null>(null);
   const [isListCarDialogOpen, setIsListCarDialogOpen] = useState(false);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [isDealershipDialogOpen, setIsDealershipDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [dealershipLoading, setDealershipLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { logout } = useAuth();
@@ -62,13 +66,28 @@ const Dashboard = () => {
           description: "There was an error loading your car inventory",
           variant: "destructive",
         });
-        setCars([]); // Set empty array on error
+        setCars([]);
       } finally {
         setLoading(false);
       }
     };
 
+    // Load dealership profile
+    const loadDealership = async () => {
+      try {
+        setDealershipLoading(true);
+        const dealershipData = await dealershipApi.getDealershipProfile();
+        setDealership(dealershipData);
+      } catch (error) {
+        console.error('Failed to load dealership:', error);
+        setDealership(null);
+      } finally {
+        setDealershipLoading(false);
+      }
+    };
+
     loadCars();
+    loadDealership();
   }, [navigate, toast]);
 
   const handleLogout = async () => {
@@ -143,6 +162,11 @@ const Dashboard = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleDealershipSuccess = (updatedDealership: Dealership) => {
+    setDealership(updatedDealership);
+    setIsDealershipDialogOpen(false);
   };
 
   if (!dealer) {
@@ -227,6 +251,146 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Dealership Management */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Building2 className="w-6 h-6 text-primary" />
+                <div>
+                  <CardTitle>Dealership Profile</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Manage your dealership information and branding
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => setIsDealershipDialogOpen(true)}
+                variant={dealership ? "outline" : "default"}
+                className={dealership ? "" : "bg-gradient-gold hover:shadow-gold"}
+              >
+                {dealership ? (
+                  <>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Dealership
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Dealership
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {dealershipLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-sm text-muted-foreground">Loading dealership...</p>
+                </div>
+              </div>
+            ) : dealership ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Dealership Info */}
+                <div className="md:col-span-2 space-y-4">
+                  <div className="flex items-start space-x-4">
+                    {dealership.avatar_url && (
+                      <img
+                        src={dealership.avatar_url}
+                        alt={dealership.name}
+                        className="w-16 h-16 rounded-lg object-cover"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold">{dealership.name}</h3>
+                      {dealership.is_verified && (
+                        <Badge className="bg-green-500 text-white mt-1">
+                          ✓ Verified
+                        </Badge>
+                      )}
+                      <p className="text-muted-foreground mt-2">{dealership.description}</p>
+                      {dealership.website && (
+                        <a
+                          href={dealership.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline text-sm mt-2 inline-block"
+                        >
+                          {dealership.website}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {dealership.specialties.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Specialties</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {dealership.specialties.map((specialty, index) => (
+                          <Badge key={index} variant="secondary">
+                            {specialty}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dealership Stats */}
+                <div className="space-y-4">
+                  <div className="bg-muted p-4 rounded-lg">
+                    <h4 className="font-medium mb-3">Dealership Stats</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Total Cars:</span>
+                        <span className="font-medium">{dealership.total_cars}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Locations:</span>
+                        <span className="font-medium">{dealership.locations_served.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Rating:</span>
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          <span className="font-medium">{dealership.average_rating}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {dealership.locations_served.length > 0 && (
+                    <div className="bg-muted p-4 rounded-lg">
+                      <h4 className="font-medium mb-2">Locations Served</h4>
+                      <div className="space-y-1 text-sm">
+                        {dealership.locations_served.map((location, index) => (
+                          <div key={index} className="text-muted-foreground">
+                            {location}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">No dealership profile yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Create your dealership profile to showcase your business and attract more customers
+                </p>
+                <Button onClick={() => setIsDealershipDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Dealership Profile
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Cars Management */}
         <Card>
@@ -339,6 +503,13 @@ const Dashboard = () => {
                isOpen={isProfileDialogOpen}
                onClose={() => setIsProfileDialogOpen(false)}
                userRole="DEALER"
+             />
+
+             <DealershipDialog
+               isOpen={isDealershipDialogOpen}
+               onClose={() => setIsDealershipDialogOpen(false)}
+               onSuccess={handleDealershipSuccess}
+               dealership={dealership}
              />
            </div>
          );

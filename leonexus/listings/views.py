@@ -7,13 +7,14 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Avg
-from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buyer, Category
+from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buyer, Dealership
 from .serializers import (
     UserSerializer, UserProfileSerializer, DealerSerializer, 
     DealerCreateSerializer, CategorySerializer, CarListSerializer,
     DealerCarListSerializer, CarDetailSerializer, CarCreateUpdateSerializer, CarImageSerializer,
     ReviewSerializer, ReviewCreateSerializer, FavoriteSerializer,
-    FavoriteCreateSerializer, BuyerSerializer, BuyerCreateSerializer
+    FavoriteCreateSerializer, BuyerSerializer, BuyerCreateSerializer,
+    DealershipSerializer, DealershipCreateUpdateSerializer
 )
 
 # Custom Permissions
@@ -447,3 +448,85 @@ def search_suggestions(request):
     suggestions.extend([{'type': 'location', 'value': location} for location in locations])
     
     return Response(suggestions[:10])
+
+# Dealership Views
+class DealershipListView(generics.ListAPIView):
+    """List all dealerships for public viewing"""
+    queryset = Dealership.objects.all()
+    serializer_class = DealershipSerializer
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description', 'specialties']
+    ordering_fields = ['name', 'created_at', 'total_cars', 'average_rating']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        return Dealership.objects.select_related('dealer__user').prefetch_related('dealer__cars')
+
+class DealershipDetailView(generics.RetrieveAPIView):
+    """Get specific dealership details"""
+    queryset = Dealership.objects.all()
+    serializer_class = DealershipSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return Dealership.objects.select_related('dealer__user').prefetch_related('dealer__cars')
+
+class DealershipCreateView(generics.CreateAPIView):
+    """Create dealership profile for authenticated dealer"""
+    serializer_class = DealershipCreateUpdateSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
+
+    def perform_create(self, serializer):
+        # Ensure user has dealer profile
+        if not hasattr(self.request.user, 'dealer_profile'):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'error': 'You must create a dealer profile first'})
+        
+        # Check if dealership already exists
+        if hasattr(self.request.user.dealer_profile, 'dealership'):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'error': 'Dealership profile already exists'})
+        
+        serializer.save(dealer=self.request.user.dealer_profile)
+
+class DealershipUpdateView(generics.RetrieveUpdateAPIView):
+    """Update dealership profile for authenticated dealer"""
+    serializer_class = DealershipCreateUpdateSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
+
+    def get_object(self):
+        if not hasattr(self.request.user, 'dealer_profile'):
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Dealer profile not found")
+        
+        if not hasattr(self.request.user.dealer_profile, 'dealership'):
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Dealership profile not found")
+        
+        return self.request.user.dealer_profile.dealership
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return DealershipSerializer
+        return DealershipCreateUpdateSerializer
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def dealership_stats(request):
+    """Get dealership statistics"""
+    stats = {
+        'total_dealerships': Dealership.objects.count(),
+        'verified_dealerships': Dealership.objects.filter(is_verified=True).count(),
+        'total_cars_listed': sum(dealership.total_cars for dealership in Dealership.objects.all()),
+        'average_rating': Dealership.objects.aggregate(
+            avg_rating=Avg('dealer__cars__reviews__rating')
+        )['avg_rating'] or 0,
+        'specialties': list(set([
+            specialty for dealership in Dealership.objects.all() 
+            for specialty in dealership.specialties
+        ])),
+    }
+    return Response(stats)

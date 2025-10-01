@@ -22,6 +22,13 @@ urlpatterns = [
     path('dealers/create/', views.DealerCreateView.as_view(), name='dealer-create'),
     path('dealers/profile/', views.DealerDetailView.as_view(), name='dealer-profile'),
     
+    # Dealership URLs
+    path('dealerships/', views.DealershipListView.as_view(), name='dealership-list'),
+    path('dealerships/<int:pk>/', views.DealershipDetailView.as_view(), name='dealership-detail'),
+    path('dealerships/create/', views.DealershipCreateView.as_view(), name='dealership-create'),
+    path('dealerships/profile/', views.DealershipUpdateView.as_view(), name='dealership-profile'),
+    path('dealerships/stats/', views.dealership_stats, name='dealership-stats'),
+    
     # Dealer Car Management URLs
     path('dealers/cars/', views.DealerCarListView.as_view(), name='dealer-cars'),
     path('dealers/cars/create/', views.DealerCarCreateView.as_view(), name='dealer-car-create'),

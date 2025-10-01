@@ -103,6 +103,39 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface Dealership {
+  id: number;
+  dealer: {
+    id: number;
+    user: User;
+    first_name: string;
+    last_name: string;
+    phone: string;
+    address: string;
+    car_count: number;
+  };
+  name: string;
+  description: string;
+  specialties: string[];
+  avatar?: string;
+  avatar_url?: string;
+  website?: string;
+  is_verified: boolean;
+  total_cars: number;
+  locations_served: string[];
+  average_rating: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DealershipCreateUpdate {
+  name: string;
+  description: string;
+  specialties: string[];
+  avatar?: File;
+  website?: string;
+}
+
 // API Helper Functions
 const getAuthHeaders = () => {
   const token = localStorage.getItem('authToken');
@@ -626,6 +659,153 @@ export const profilesApi = {
         ...getAuthHeaders(),
       },
       body: JSON.stringify(profileData),
+    });
+
+    return handleApiResponse(response);
+  },
+};
+
+// Dealership API Functions
+export const dealershipApi = {
+  // Get all dealerships
+  getDealerships: async (): Promise<Dealership[]> => {
+    const response = await fetch(`${API_BASE_URL}/dealerships/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await handleApiResponse(response);
+
+    // Handle both paginated and direct array responses
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data && Array.isArray(data.results)) {
+      return data.results;
+    } else {
+      console.error('Unexpected dealerships response format:', data);
+      return [];
+    }
+  },
+
+  // Get specific dealership
+  getDealership: async (id: number): Promise<Dealership> => {
+    const response = await fetch(`${API_BASE_URL}/dealerships/${id}/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Create dealership profile
+  createDealership: async (dealershipData: DealershipCreateUpdate): Promise<Dealership> => {
+    const token = localStorage.getItem('authToken');
+    
+    // If there's an avatar file, use FormData, otherwise use JSON
+    if (dealershipData.avatar) {
+      const formData = new FormData();
+      formData.append('name', dealershipData.name);
+      formData.append('description', dealershipData.description);
+      formData.append('website', dealershipData.website || '');
+      formData.append('specialties', JSON.stringify(dealershipData.specialties));
+      formData.append('avatar', dealershipData.avatar);
+
+      const response = await fetch(`${API_BASE_URL}/dealerships/create/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+        body: formData,
+      });
+
+      return handleApiResponse(response);
+    } else {
+      const response = await fetch(`${API_BASE_URL}/dealerships/create/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`,
+        },
+        body: JSON.stringify({
+          name: dealershipData.name,
+          description: dealershipData.description,
+          specialties: dealershipData.specialties,
+          website: dealershipData.website || '',
+        }),
+      });
+
+      return handleApiResponse(response);
+    }
+  },
+
+  // Update dealership profile
+  updateDealership: async (dealershipData: DealershipCreateUpdate): Promise<Dealership> => {
+    const token = localStorage.getItem('authToken');
+    
+    // If there's an avatar file, use FormData, otherwise use JSON
+    if (dealershipData.avatar) {
+      const formData = new FormData();
+      formData.append('name', dealershipData.name);
+      formData.append('description', dealershipData.description);
+      formData.append('website', dealershipData.website || '');
+      formData.append('specialties', JSON.stringify(dealershipData.specialties));
+      formData.append('avatar', dealershipData.avatar);
+
+      const response = await fetch(`${API_BASE_URL}/dealerships/profile/`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+        body: formData,
+      });
+
+      return handleApiResponse(response);
+    } else {
+      const response = await fetch(`${API_BASE_URL}/dealerships/profile/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`,
+        },
+        body: JSON.stringify({
+          name: dealershipData.name,
+          description: dealershipData.description,
+          specialties: dealershipData.specialties,
+          website: dealershipData.website || '',
+        }),
+      });
+
+      return handleApiResponse(response);
+    }
+  },
+
+  // Get dealership profile (for authenticated dealer)
+  getDealershipProfile: async (): Promise<Dealership> => {
+    const response = await fetch(`${API_BASE_URL}/dealerships/profile/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Get dealership statistics
+  getDealershipStats: async (): Promise<{
+    total_dealerships: number;
+    verified_dealerships: number;
+    total_cars_listed: number;
+    average_rating: number;
+    specialties: string[];
+  }> => {
+    const response = await fetch(`${API_BASE_URL}/dealerships/stats/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     return handleApiResponse(response);

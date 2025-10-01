@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.db import models
-from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buyer
+from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buyer, Dealership
 
 User = get_user_model()
 
@@ -59,6 +59,70 @@ class BuyerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Buyer
         fields = ['first_name', 'last_name', 'phone']
+
+class DealershipSerializer(serializers.ModelSerializer):
+    """Serializer for dealership profiles with computed fields"""
+    dealer = DealerSerializer(read_only=True)
+    avatar_url = serializers.SerializerMethodField()
+    total_cars = serializers.SerializerMethodField()
+    locations_served = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Dealership
+        fields = [
+            'id', 'dealer', 'name', 'description', 'specialties', 
+            'avatar', 'avatar_url', 'website', 'is_verified',
+            'total_cars', 'locations_served', 'average_rating',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'is_verified']
+    
+    def get_avatar_url(self, obj):
+        if obj.avatar:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
+    
+    def get_total_cars(self, obj):
+        return obj.total_cars
+    
+    def get_locations_served(self, obj):
+        return obj.locations_served
+    
+    def get_average_rating(self, obj):
+        return obj.average_rating
+
+class DealershipCreateUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for creating and updating dealership profiles"""
+    
+    class Meta:
+        model = Dealership
+        fields = ['name', 'description', 'specialties', 'avatar', 'website']
+    
+    def validate_specialties(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Specialties must be a list of strings.")
+        
+        for specialty in value:
+            if not isinstance(specialty, str) or len(specialty.strip()) == 0:
+                raise serializers.ValidationError("Each specialty must be a non-empty string.")
+        
+        return [specialty.strip() for specialty in value if specialty.strip()]
+    
+    def create(self, validated_data):
+        # Ensure user has dealer profile
+        dealer = self.context['request'].user.dealer_profile
+        validated_data['dealer'] = dealer
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        # Only allow updating own dealership
+        if instance.dealer.user != self.context['request'].user:
+            raise serializers.ValidationError("You can only update your own dealership.")
+        return super().update(instance, validated_data)
 
 class CategorySerializer(serializers.ModelSerializer):
     car_count = serializers.SerializerMethodField()
