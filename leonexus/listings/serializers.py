@@ -433,6 +433,7 @@ class CarCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Car
         fields = [
+            "dealer",
             "title",
             "make",
             "model",
