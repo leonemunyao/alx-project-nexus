@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Car as CarIcon, Plus, Edit, Trash2, LogOut, BarChart3, User, Building2, Star } from "lucide-react";
+import { Car as CarIcon, Plus, Edit, Trash2, LogOut, BarChart3, User, Building2, Star, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import EditCarDialog from "@/components/EditCarDialog";
 import ListCarDialog from "@/components/ListCarDialog";
 import ProfileDialog from "@/components/ProfileDialog";
 import DealershipDialog from "@/components/DealershipDialog";
-import { Car, dealerCarsApi, dealershipApi, Dealership } from "@/services/api";
+import { Car, dealerCarsApi, dealershipApi, Dealership, bulkCarApi } from "@/services/api";
 
 interface Dealer {
   name: string;
@@ -27,6 +27,8 @@ const Dashboard = () => {
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [isDealershipDialogOpen, setIsDealershipDialogOpen] = useState(false);
   const [isTogglingPublish, setIsTogglingPublish] = useState(false);
+  const [selectedCars, setSelectedCars] = useState<number[]>([]);
+  const [isBulkOperating, setIsBulkOperating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dealershipLoading, setDealershipLoading] = useState(false);
   const navigate = useNavigate();
@@ -206,6 +208,54 @@ const Dashboard = () => {
       });
     } finally {
       setIsTogglingPublish(false);
+    }
+  };
+
+  const handleCarSelection = (carId: number, isSelected: boolean) => {
+    setSelectedCars(prev => 
+      isSelected 
+        ? [...prev, carId]
+        : prev.filter(id => id !== carId)
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedCars.length === cars.length) {
+      setSelectedCars([]);
+    } else {
+      setSelectedCars(cars.map(car => car.id));
+    }
+  };
+
+  const handleBulkPublish = async (action: 'publish' | 'unpublish') => {
+    if (selectedCars.length === 0) return;
+
+    setIsBulkOperating(true);
+    try {
+      const result = await bulkCarApi.bulkTogglePublish(selectedCars, action);
+      
+      // Update local state
+      setCars(prev => prev.map(car => 
+        selectedCars.includes(car.id) 
+          ? { ...car, published: action === 'publish' }
+          : car
+      ));
+      
+      setSelectedCars([]);
+      
+      toast({
+        title: "Success",
+        description: result.message,
+      });
+    } catch (error) {
+      console.error('Failed to bulk toggle publish status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update car publish status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBulkOperating(false);
     }
   };
 
@@ -470,13 +520,61 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Your Car Inventory</CardTitle>
-              <Button
-                onClick={() => setIsListCarDialogOpen(true)}
-                className="bg-gradient-gold hover:shadow-gold transition-all duration-300 gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                List Your Car
-              </Button>
+              <div className="flex items-center gap-3">
+                {cars.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSelectAll}
+                      className="text-sm"
+                    >
+                      {selectedCars.length === cars.length ? 'Deselect All' : 'Select All'}
+                    </Button>
+                    {selectedCars.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => handleBulkPublish('publish')}
+                          disabled={isBulkOperating}
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {isBulkOperating ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4 mr-1" />
+                              Publish ({selectedCars.length})
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => handleBulkPublish('unpublish')}
+                          disabled={isBulkOperating}
+                          size="sm"
+                          variant="destructive"
+                        >
+                          {isBulkOperating ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          ) : (
+                            <>
+                              <Minus className="w-4 h-4 mr-1" />
+                              Unpublish ({selectedCars.length})
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <Button
+                  onClick={() => setIsListCarDialogOpen(true)}
+                  className="bg-gradient-gold hover:shadow-gold transition-all duration-300 gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  List Your Car
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -511,6 +609,14 @@ const Dashboard = () => {
                           target.src = "/placeholder.svg";
                         }}
                       />
+                      <div className="absolute top-2 left-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedCars.includes(car.id)}
+                          onChange={(e) => handleCarSelection(car.id, e.target.checked)}
+                          className="w-4 h-4 text-primary bg-white border-gray-300 rounded focus:ring-primary focus:ring-2"
+                        />
+                      </div>
                       <Badge
                         className={`absolute top-2 right-2 ${car.published ? 'bg-green-500' : 'bg-yellow-500'}`}
                       >

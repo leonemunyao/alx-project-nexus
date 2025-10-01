@@ -889,6 +889,31 @@ export const dealershipApi = {
   },
 };
 
+// Bulk Car Publish API Functions
+export const bulkCarApi = {
+  // Bulk toggle car publish status
+  bulkTogglePublish: async (carIds: number[], action: 'publish' | 'unpublish'): Promise<{
+    message: string;
+    updated_count: number;
+    action: string;
+  }> => {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/dealers/cars/bulk-publish/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Token ${token}`,
+      },
+      body: JSON.stringify({
+        car_ids: carIds,
+        action: action,
+      }),
+    });
+
+    return handleApiResponse(response);
+  },
+};
+
 // Utility functions for authentication state
 export const authUtils = {
   // Check if user is authenticated

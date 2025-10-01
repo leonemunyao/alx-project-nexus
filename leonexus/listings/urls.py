@@ -34,6 +34,7 @@ urlpatterns = [
     path('dealers/cars/', views.DealerCarListView.as_view(), name='dealer-cars'),
     path('dealers/cars/create/', views.DealerCarCreateView.as_view(), name='dealer-car-create'),
     path('dealers/cars/<int:pk>/', views.DealerCarDetailView.as_view(), name='dealer-car-detail'),
+    path('dealers/cars/bulk-publish/', views.bulk_toggle_car_publish, name='bulk-toggle-car-publish'),
     
     # Category URLs
     path('categories/', views.CategoryListView.as_view(), name='category-list'),

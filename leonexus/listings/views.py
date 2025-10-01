@@ -535,6 +535,41 @@ def toggle_dealership_publish(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def bulk_toggle_car_publish(request):
+    """Bulk toggle car publish status"""
+    try:
+        if not hasattr(request.user, 'dealer_profile'):
+            return Response({'error': 'Dealer profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        car_ids = request.data.get('car_ids', [])
+        action = request.data.get('action', 'publish')  # 'publish' or 'unpublish'
+        
+        if not car_ids or not isinstance(car_ids, list):
+            return Response({'error': 'car_ids must be a non-empty list'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if action not in ['publish', 'unpublish']:
+            return Response({'error': 'action must be either "publish" or "unpublish"'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        dealer = request.user.dealer_profile
+        cars = Car.objects.filter(id__in=car_ids, dealer=dealer)
+        
+        if cars.count() != len(car_ids):
+            return Response({'error': 'Some cars not found or not owned by dealer'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update cars
+        published_status = action == 'publish'
+        updated_count = cars.update(published=published_status)
+        
+        return Response({
+            'message': f'{updated_count} cars {"published" if published_status else "unpublished"} successfully',
+            'updated_count': updated_count,
+            'action': action
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def dealership_stats(request):
