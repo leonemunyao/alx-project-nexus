@@ -201,7 +201,7 @@ class CarListSerializer(serializers.ModelSerializer):
             'id', 'title', 'make', 'model', 'year', 'price', 'location',
             'mileage', 'transmission', 'fuel_type', 'condition',
             'dealer', 'category', 'primary_image', 'average_rating',
-            'review_count', 'created_at'
+            'review_count', 'published', 'created_at'
         ]
 
 class DealerCarListSerializer(serializers.ModelSerializer):
@@ -220,7 +220,10 @@ class DealerCarListSerializer(serializers.ModelSerializer):
     def get_primary_image(self, obj):
         primary_image = obj.images.filter(order=0).first()
         if primary_image:
-            return self.context['request'].build_absolute_uri(primary_image.image.url)
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(primary_image.image.url)
+            return primary_image.image.url
         return None
     
     def get_average_rating(self, obj):

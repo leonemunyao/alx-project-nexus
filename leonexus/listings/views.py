@@ -215,10 +215,8 @@ class CarListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         # Ensure user has dealer profile
         if not hasattr(self.request.user, 'dealer_profile'):
-            return Response(
-                {'error': 'You must create a dealer profile first'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'error': 'You must create a dealer profile first'})
         serializer.save(dealer=self.request.user.dealer_profile)
 
 class CarDetailView(generics.RetrieveUpdateDestroyAPIView):
