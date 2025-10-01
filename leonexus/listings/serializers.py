@@ -94,6 +94,12 @@ class DealershipSerializer(serializers.ModelSerializer):
     
     def get_average_rating(self, obj):
         return obj.average_rating
+    
+    def to_representation(self, instance):
+        """Ensure specialties is always returned as an array"""
+        data = super().to_representation(instance)
+        data['specialties'] = data.get('specialties', [])
+        return data
 
 class DealershipCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer for creating and updating dealership profiles"""
@@ -119,6 +125,12 @@ class DealershipCreateUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Each specialty must be a non-empty string.")
         
         return valid_specialties
+    
+    def to_representation(self, instance):
+        """Ensure specialties is always returned as an array"""
+        data = super().to_representation(instance)
+        data['specialties'] = data.get('specialties', [])
+        return data
     
     def create(self, validated_data):
         # Ensure user has dealer profile

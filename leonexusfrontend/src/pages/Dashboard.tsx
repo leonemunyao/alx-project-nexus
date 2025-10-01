@@ -77,10 +77,13 @@ const Dashboard = () => {
       try {
         setDealershipLoading(true);
         const dealershipData = await dealershipApi.getDealershipProfile();
-        // Ensure specialties is always an array
+        // Ensure all array fields are properly normalized
         const normalizedDealership = {
           ...dealershipData,
-          specialties: Array.isArray(dealershipData.specialties) ? dealershipData.specialties : []
+          specialties: Array.isArray(dealershipData.specialties) ? dealershipData.specialties : [],
+          locations_served: Array.isArray(dealershipData.locations_served) ? dealershipData.locations_served : [],
+          total_cars: typeof dealershipData.total_cars === 'number' ? dealershipData.total_cars : 0,
+          average_rating: typeof dealershipData.average_rating === 'number' ? dealershipData.average_rating : 0
         };
         setDealership(normalizedDealership);
       } catch (error) {
@@ -170,10 +173,13 @@ const Dashboard = () => {
   };
 
   const handleDealershipSuccess = (updatedDealership: Dealership) => {
-    // Ensure specialties is always an array
+    // Ensure all array fields are properly normalized
     const normalizedDealership = {
       ...updatedDealership,
-      specialties: Array.isArray(updatedDealership.specialties) ? updatedDealership.specialties : []
+      specialties: Array.isArray(updatedDealership.specialties) ? updatedDealership.specialties : [],
+      locations_served: Array.isArray(updatedDealership.locations_served) ? updatedDealership.locations_served : [],
+      total_cars: typeof updatedDealership.total_cars === 'number' ? updatedDealership.total_cars : 0,
+      average_rating: typeof updatedDealership.average_rating === 'number' ? updatedDealership.average_rating : 0
     };
     setDealership(normalizedDealership);
     setIsDealershipDialogOpen(false);

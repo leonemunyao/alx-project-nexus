@@ -144,7 +144,7 @@ class Dealership(models.Model):
     dealer = models.OneToOneField(Dealer, on_delete=models.CASCADE, related_name="dealership")
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    specialties = models.JSONField(default=list, blank=True)  # List of specialty strings
+    specialties = models.JSONField(default=list, blank=True)
     avatar = models.ImageField(upload_to="dealership_avatars/", blank=True, null=True)
     website = models.URLField(blank=True)
     is_verified = models.BooleanField(default=False)

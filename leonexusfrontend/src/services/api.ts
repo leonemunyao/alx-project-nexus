@@ -679,14 +679,24 @@ export const dealershipApi = {
     const data = await handleApiResponse(response);
 
     // Handle both paginated and direct array responses
+    let dealerships = [];
     if (Array.isArray(data)) {
-      return data;
+      dealerships = data;
     } else if (data && Array.isArray(data.results)) {
-      return data.results;
+      dealerships = data.results;
     } else {
       console.error('Unexpected dealerships response format:', data);
       return [];
     }
+
+    // Ensure each dealership has proper array fields
+    return dealerships.map(dealership => ({
+      ...dealership,
+      specialties: Array.isArray(dealership.specialties) ? dealership.specialties : [],
+      locations_served: Array.isArray(dealership.locations_served) ? dealership.locations_served : [],
+      total_cars: typeof dealership.total_cars === 'number' ? dealership.total_cars : 0,
+      average_rating: typeof dealership.average_rating === 'number' ? dealership.average_rating : 0
+    }));
   },
 
   // Get specific dealership
@@ -698,7 +708,15 @@ export const dealershipApi = {
       },
     });
 
-    return handleApiResponse(response);
+    const result = await handleApiResponse(response);
+    // Ensure the response has proper array fields
+    return {
+      ...result,
+      specialties: Array.isArray(result.specialties) ? result.specialties : [],
+      locations_served: Array.isArray(result.locations_served) ? result.locations_served : [],
+      total_cars: typeof result.total_cars === 'number' ? result.total_cars : 0,
+      average_rating: typeof result.average_rating === 'number' ? result.average_rating : 0
+    };
   },
 
   // Create dealership profile
@@ -726,10 +744,13 @@ export const dealershipApi = {
       });
 
       const result = await handleApiResponse(response);
-      // Ensure the response has a proper specialties array
+      // Ensure the response has a proper specialties array and all required fields
       return {
         ...result,
-        specialties: Array.isArray(result.specialties) ? result.specialties : []
+        specialties: Array.isArray(result.specialties) ? result.specialties : [],
+        locations_served: Array.isArray(result.locations_served) ? result.locations_served : [],
+        total_cars: typeof result.total_cars === 'number' ? result.total_cars : 0,
+        average_rating: typeof result.average_rating === 'number' ? result.average_rating : 0
       };
     } else {
       const response = await fetch(`${API_BASE_URL}/dealerships/create/`, {
@@ -747,10 +768,13 @@ export const dealershipApi = {
       });
 
       const result = await handleApiResponse(response);
-      // Ensure the response has a proper specialties array
+      // Ensure the response has a proper specialties array and all required fields
       return {
         ...result,
-        specialties: Array.isArray(result.specialties) ? result.specialties : []
+        specialties: Array.isArray(result.specialties) ? result.specialties : [],
+        locations_served: Array.isArray(result.locations_served) ? result.locations_served : [],
+        total_cars: typeof result.total_cars === 'number' ? result.total_cars : 0,
+        average_rating: typeof result.average_rating === 'number' ? result.average_rating : 0
       };
     }
   },
@@ -801,10 +825,13 @@ export const dealershipApi = {
       });
 
       const result = await handleApiResponse(response);
-      // Ensure the response has a proper specialties array
+      // Ensure the response has a proper specialties array and all required fields
       return {
         ...result,
-        specialties: Array.isArray(result.specialties) ? result.specialties : []
+        specialties: Array.isArray(result.specialties) ? result.specialties : [],
+        locations_served: Array.isArray(result.locations_served) ? result.locations_served : [],
+        total_cars: typeof result.total_cars === 'number' ? result.total_cars : 0,
+        average_rating: typeof result.average_rating === 'number' ? result.average_rating : 0
       };
     }
   },
@@ -817,10 +844,13 @@ export const dealershipApi = {
     });
 
     const result = await handleApiResponse(response);
-    // Ensure the response has a proper specialties array
+    // Ensure the response has a proper specialties array and all required fields
     return {
       ...result,
-      specialties: Array.isArray(result.specialties) ? result.specialties : []
+      specialties: Array.isArray(result.specialties) ? result.specialties : [],
+      locations_served: Array.isArray(result.locations_served) ? result.locations_served : [],
+      total_cars: typeof result.total_cars === 'number' ? result.total_cars : 0,
+      average_rating: typeof result.average_rating === 'number' ? result.average_rating : 0
     };
   },
 
