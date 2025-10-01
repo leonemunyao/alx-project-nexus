@@ -466,7 +466,7 @@ const Dashboard = () => {
                       </h3>
                       <div className="space-y-1 text-sm text-muted-foreground mb-4">
                         <p>Price: ${parseFloat(car.price).toLocaleString()}</p>
-                        {car.mileage && <p>Mileage: {car.mileage.toLocaleString()} miles</p>}
+                        <p>Mileage: {car.mileage ? car.mileage.toLocaleString() : '0'} miles</p>
                         <p>Condition: {car.condition}</p>
                         <p>Location: {car.location}</p>
                       </div>

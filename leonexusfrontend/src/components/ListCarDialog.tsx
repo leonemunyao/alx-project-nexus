@@ -152,9 +152,6 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
         "New", "Ex-Uk", "Ex-Japan"
     ];
 
-    const locations = [
-        "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Thika"
-    ];
 
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: currentYear - 2020 + 2 }, (_, i) => currentYear + 1 - i);
@@ -295,18 +292,14 @@ const ListCarDialog = ({ isOpen, onClose, onAdd }: ListCarDialogProps) => {
                                     <Label htmlFor="location">Location *</Label>
                                     <div className="relative">
                                         <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                                        <Select value={formData.location} onValueChange={(value) => handleInputChange("location", value)}>
-                                            <SelectTrigger className="pl-10">
-                                                <SelectValue placeholder="Select location" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {locations.map((location) => (
-                                                    <SelectItem key={location} value={location}>
-                                                        {location}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <Input
+                                            id="location"
+                                            placeholder="e.g., Nairobi, Mombasa, Kisumu"
+                                            className="pl-10"
+                                            value={formData.location}
+                                            onChange={(e) => handleInputChange("location", e.target.value)}
+                                            required
+                                        />
                                     </div>
                                 </div>
 
