@@ -33,7 +33,7 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
       setFormData({
         name: dealership.name || "",
         description: dealership.description || "",
-        specialties: dealership.specialties || [],
+        specialties: Array.isArray(dealership.specialties) ? dealership.specialties : [],
         website: dealership.website || "",
       });
       setAvatarPreview(dealership.avatar_url || null);
@@ -46,6 +46,7 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
       });
       setAvatarPreview(null);
     }
+    setSpecialtyInput(""); // Reset specialty input when dialog opens/closes
   }, [dealership, isOpen]);
 
   const handleInputChange = (field: keyof DealershipCreateUpdate, value: string) => {
@@ -66,20 +67,29 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
 
   const addSpecialty = () => {
     const specialty = specialtyInput.trim();
-    if (specialty && !(formData.specialties || []).includes(specialty)) {
-      setFormData(prev => ({
-        ...prev,
-        specialties: [...(prev.specialties || []), specialty]
-      }));
+    if (specialty) {
+      setFormData(prev => {
+        const currentSpecialties = Array.isArray(prev.specialties) ? prev.specialties : [];
+        if (!currentSpecialties.includes(specialty)) {
+          return {
+            ...prev,
+            specialties: [...currentSpecialties, specialty]
+          };
+        }
+        return prev;
+      });
       setSpecialtyInput("");
     }
   };
 
   const removeSpecialty = (specialtyToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      specialties: (prev.specialties || []).filter(specialty => specialty !== specialtyToRemove)
-    }));
+    setFormData(prev => {
+      const currentSpecialties = Array.isArray(prev.specialties) ? prev.specialties : [];
+      return {
+        ...prev,
+        specialties: currentSpecialties.filter(specialty => specialty !== specialtyToRemove)
+      };
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -91,7 +101,7 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim()) {
       toast({
         title: "Error",
@@ -113,16 +123,19 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
     setIsLoading(true);
 
     try {
-      // Ensure specialties is always an array
-      const submitData = {
-        ...formData,
-        specialties: formData.specialties || []
+      // Ensure specialties is always an array and clean up the data
+      const submitData: DealershipCreateUpdate = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        specialties: Array.isArray(formData.specialties) ? formData.specialties : [],
+        website: formData.website?.trim() || undefined,
+        avatar: formData.avatar
       };
 
       console.log('Submitting dealership data:', submitData);
 
       let result: Dealership;
-      
+
       if (dealership) {
         result = await dealershipApi.updateDealership(submitData);
         toast({
@@ -261,10 +274,10 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
-            
-            {(formData.specialties || []).length > 0 && (
+
+            {Array.isArray(formData.specialties) && formData.specialties.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
-                {(formData.specialties || []).map((specialty, index) => (
+                {formData.specialties.map((specialty, index) => (
                   <Badge
                     key={index}
                     variant="secondary"
