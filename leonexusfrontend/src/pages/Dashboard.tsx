@@ -77,7 +77,12 @@ const Dashboard = () => {
       try {
         setDealershipLoading(true);
         const dealershipData = await dealershipApi.getDealershipProfile();
-        setDealership(dealershipData);
+        // Ensure specialties is always an array
+        const normalizedDealership = {
+          ...dealershipData,
+          specialties: Array.isArray(dealershipData.specialties) ? dealershipData.specialties : []
+        };
+        setDealership(normalizedDealership);
       } catch (error) {
         console.error('Failed to load dealership:', error);
         setDealership(null);
@@ -165,7 +170,12 @@ const Dashboard = () => {
   };
 
   const handleDealershipSuccess = (updatedDealership: Dealership) => {
-    setDealership(updatedDealership);
+    // Ensure specialties is always an array
+    const normalizedDealership = {
+      ...updatedDealership,
+      specialties: Array.isArray(updatedDealership.specialties) ? updatedDealership.specialties : []
+    };
+    setDealership(normalizedDealership);
     setIsDealershipDialogOpen(false);
   };
 
@@ -188,16 +198,16 @@ const Dashboard = () => {
                 <p className="text-muted-foreground">Welcome back, {dealer.name}</p>
               </div>
             </div>
-                   <div className="flex items-center gap-3">
-                     <Button onClick={() => setIsProfileDialogOpen(true)} variant="outline" className="gap-2">
-                       <User className="w-4 h-4" />
-                       Profile
-                     </Button>
-                     <Button onClick={handleLogout} variant="outline" className="gap-2">
-                       <LogOut className="w-4 h-4" />
-                       Logout
-                     </Button>
-                   </div>
+            <div className="flex items-center gap-3">
+              <Button onClick={() => setIsProfileDialogOpen(true)} variant="outline" className="gap-2">
+                <User className="w-4 h-4" />
+                Profile
+              </Button>
+              <Button onClick={handleLogout} variant="outline" className="gap-2">
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -324,8 +334,8 @@ const Dashboard = () => {
                       )}
                     </div>
                   </div>
-                  
-                  {dealership.specialties.length > 0 && (
+
+                  {Array.isArray(dealership.specialties) && dealership.specialties.length > 0 && (
                     <div>
                       <h4 className="font-medium mb-2">Specialties</h4>
                       <div className="flex flex-wrap gap-2">
@@ -361,7 +371,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {dealership.locations_served.length > 0 && (
                     <div className="bg-muted p-4 rounded-lg">
                       <h4 className="font-medium mb-2">Locations Served</h4>
@@ -428,16 +438,16 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {cars.map((car) => (
                   <Card key={car.id} className="overflow-hidden">
-                           <div className="aspect-video bg-muted relative">
-                             <img
-                               src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
-                               alt={`${car.make} ${car.model}`}
-                               className="w-full h-full object-cover"
-                               onError={(e) => {
-                                 const target = e.target as HTMLImageElement;
-                                 target.src = "/placeholder.svg";
-                               }}
-                             />
+                    <div className="aspect-video bg-muted relative">
+                      <img
+                        src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
+                        alt={`${car.make} ${car.model}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/placeholder.svg";
+                        }}
+                      />
                       <Badge
                         className={`absolute top-2 right-2 ${car.published ? 'bg-green-500' : 'bg-yellow-500'}`}
                       >
@@ -490,29 +500,29 @@ const Dashboard = () => {
         onAdd={handleAddCar}
       />
 
-             {editingCar && (
-               <EditCarDialog
-                 isOpen={!!editingCar}
-                 onClose={() => setEditingCar(null)}
-                 onEdit={handleEditCar}
-                 car={editingCar}
-               />
-             )}
+      {editingCar && (
+        <EditCarDialog
+          isOpen={!!editingCar}
+          onClose={() => setEditingCar(null)}
+          onEdit={handleEditCar}
+          car={editingCar}
+        />
+      )}
 
-             <ProfileDialog
-               isOpen={isProfileDialogOpen}
-               onClose={() => setIsProfileDialogOpen(false)}
-               userRole="DEALER"
-             />
+      <ProfileDialog
+        isOpen={isProfileDialogOpen}
+        onClose={() => setIsProfileDialogOpen(false)}
+        userRole="DEALER"
+      />
 
-             <DealershipDialog
-               isOpen={isDealershipDialogOpen}
-               onClose={() => setIsDealershipDialogOpen(false)}
-               onSuccess={handleDealershipSuccess}
-               dealership={dealership}
-             />
-           </div>
-         );
-       };
+      <DealershipDialog
+        isOpen={isDealershipDialogOpen}
+        onClose={() => setIsDealershipDialogOpen(false)}
+        onSuccess={handleDealershipSuccess}
+        dealership={dealership}
+      />
+    </div>
+  );
+};
 
-       export default Dashboard;
+export default Dashboard;

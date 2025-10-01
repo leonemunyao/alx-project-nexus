@@ -328,18 +328,18 @@ export const dealerCarsApi = {
     category?: number | null;
   }, images?: File[]): Promise<Car> => {
     const token = localStorage.getItem('authToken');
-    
+
     // If there are images, use FormData, otherwise use JSON
     if (images && images.length > 0) {
       const formData = new FormData();
-      
+
       // Add car data fields
       Object.entries(carData).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
           formData.append(key, value.toString());
         }
       });
-      
+
       // Add images
       images.forEach((image, index) => {
         formData.append('uploaded_images', image);
@@ -372,18 +372,18 @@ export const dealerCarsApi = {
   // Update a car
   updateCar: async (carId: number, carData: Partial<Car>, images?: File[]): Promise<Car> => {
     const token = localStorage.getItem('authToken');
-    
+
     // If there are images, use FormData, otherwise use JSON
     if (images && images.length > 0) {
       const formData = new FormData();
-      
+
       // Add car data fields
       Object.entries(carData).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
           formData.append(key, value.toString());
         }
       });
-      
+
       // Add images
       images.forEach((image, index) => {
         formData.append('uploaded_images', image);
@@ -444,7 +444,7 @@ export const carsApi = {
     ordering?: string;
   }): Promise<{ cars: Car[]; count: number; next: string | null; previous: string | null }> => {
     const params = new URLSearchParams();
-    
+
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
@@ -704,10 +704,10 @@ export const dealershipApi = {
   // Create dealership profile
   createDealership: async (dealershipData: DealershipCreateUpdate): Promise<Dealership> => {
     const token = localStorage.getItem('authToken');
-    
+
     // Ensure specialties is always an array
     const safeSpecialties = dealershipData.specialties || [];
-    
+
     // If there's an avatar file, use FormData, otherwise use JSON
     if (dealershipData.avatar) {
       const formData = new FormData();
@@ -725,7 +725,12 @@ export const dealershipApi = {
         body: formData,
       });
 
-      return handleApiResponse(response);
+      const result = await handleApiResponse(response);
+      // Ensure the response has a proper specialties array
+      return {
+        ...result,
+        specialties: Array.isArray(result.specialties) ? result.specialties : []
+      };
     } else {
       const response = await fetch(`${API_BASE_URL}/dealerships/create/`, {
         method: 'POST',
@@ -741,17 +746,22 @@ export const dealershipApi = {
         }),
       });
 
-      return handleApiResponse(response);
+      const result = await handleApiResponse(response);
+      // Ensure the response has a proper specialties array
+      return {
+        ...result,
+        specialties: Array.isArray(result.specialties) ? result.specialties : []
+      };
     }
   },
 
   // Update dealership profile
   updateDealership: async (dealershipData: DealershipCreateUpdate): Promise<Dealership> => {
     const token = localStorage.getItem('authToken');
-    
+
     // Ensure specialties is always an array
     const safeSpecialties = dealershipData.specialties || [];
-    
+
     // If there's an avatar file, use FormData, otherwise use JSON
     if (dealershipData.avatar) {
       const formData = new FormData();
@@ -769,7 +779,12 @@ export const dealershipApi = {
         body: formData,
       });
 
-      return handleApiResponse(response);
+      const result = await handleApiResponse(response);
+      // Ensure the response has a proper specialties array
+      return {
+        ...result,
+        specialties: Array.isArray(result.specialties) ? result.specialties : []
+      };
     } else {
       const response = await fetch(`${API_BASE_URL}/dealerships/profile/`, {
         method: 'PUT',
@@ -785,7 +800,12 @@ export const dealershipApi = {
         }),
       });
 
-      return handleApiResponse(response);
+      const result = await handleApiResponse(response);
+      // Ensure the response has a proper specialties array
+      return {
+        ...result,
+        specialties: Array.isArray(result.specialties) ? result.specialties : []
+      };
     }
   },
 
@@ -796,7 +816,12 @@ export const dealershipApi = {
       headers: getAuthHeaders(),
     });
 
-    return handleApiResponse(response);
+    const result = await handleApiResponse(response);
+    // Ensure the response has a proper specialties array
+    return {
+      ...result,
+      specialties: Array.isArray(result.specialties) ? result.specialties : []
+    };
   },
 
   // Get dealership statistics
