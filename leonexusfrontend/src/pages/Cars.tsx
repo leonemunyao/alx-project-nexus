@@ -31,15 +31,15 @@ const Cars = () => {
   // Filter states
   const [filters, setFilters] = useState({
     search: "",
-    make: "",
+    make: "all",
     model: "",
-    year: "",
+    year: "all",
     min_price: "",
     max_price: "",
-    location: "",
-    fuel_type: "",
-    transmission: "",
-    category: "",
+    location: "all",
+    fuel_type: "all",
+    transmission: "all",
+    category: "all",
     ordering: "-created_at"
   });
 
@@ -111,7 +111,9 @@ const Cars = () => {
   };
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    // Treat "all" as empty string for filtering purposes
+    const filterValue = value === "all" ? "" : value;
+    setFilters(prev => ({ ...prev, [key]: filterValue }));
     setCurrentPage(1); // Reset to first page when filters change
   };
 
@@ -213,7 +215,7 @@ const Cars = () => {
                     <SelectValue placeholder="Make" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Makes</SelectItem>
+                    <SelectItem value="all">All Makes</SelectItem>
                     {carMakes.map((make) => (
                       <SelectItem key={make} value={make}>{make}</SelectItem>
                     ))}
@@ -225,7 +227,7 @@ const Cars = () => {
                     <SelectValue placeholder="Location" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Locations</SelectItem>
+                    <SelectItem value="all">All Locations</SelectItem>
                     {locations.map((location) => (
                       <SelectItem key={location} value={location}>{location}</SelectItem>
                     ))}
@@ -280,7 +282,7 @@ const Cars = () => {
                         <SelectValue placeholder="Any Year" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any Year</SelectItem>
+                        <SelectItem value="all">Any Year</SelectItem>
                         {years.map((year) => (
                           <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
                         ))}
@@ -315,7 +317,7 @@ const Cars = () => {
                         <SelectValue placeholder="Any Fuel Type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any Fuel Type</SelectItem>
+                        <SelectItem value="all">Any Fuel Type</SelectItem>
                         <SelectItem value="PETROL">Petrol</SelectItem>
                         <SelectItem value="DIESEL">Diesel</SelectItem>
                         <SelectItem value="HYBRID">Hybrid</SelectItem>
@@ -331,7 +333,7 @@ const Cars = () => {
                         <SelectValue placeholder="Any Transmission" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any Transmission</SelectItem>
+                        <SelectItem value="all">Any Transmission</SelectItem>
                         <SelectItem value="AUTOMATIC">Automatic</SelectItem>
                         <SelectItem value="MANUAL">Manual</SelectItem>
                         <SelectItem value="CVT">CVT</SelectItem>
@@ -346,7 +348,7 @@ const Cars = () => {
                         <SelectValue placeholder="Any Category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any Category</SelectItem>
+                        <SelectItem value="all">Any Category</SelectItem>
                         {categories.map((category) => (
                           <SelectItem key={category.id} value={category.id.toString()}>
                             {category.name}
