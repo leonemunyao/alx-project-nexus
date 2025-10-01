@@ -4,16 +4,7 @@
 
 ## ProDev Backend Engineering Program Overview
 
-The ProDev ### 🌐 Deployment & Hosting
-
-The LeoNexus platform is deployed using modern cloud infrastructure for optimal performance and scalability:
-
-- **Backend API**: Hosted on **Render** for reliable Django REST Framework deployment
-- **Frontend Application**: Deployed on **Vercel** for fast global content delivery
-- **Database**: PostgreSQL database hosted on **Neon** for cloud-native data management
-- **Image Storage**: **Cloudinary** for cloud-based image storage, processing, and CDN delivery
-
-This cloud-first deployment strategy ensures high availability, automatic scaling, seamless CI/CD integration, and optimized image delivery worldwide.rogram is a great learning experience for any aspiring professional Back-End Engineer. In this program, different technologies are learnt, while working on different projects to apply the skills learnt.
+The ProDev Backend program has equiped has with knowledge in different fiels,
 
 From `AI Prompting`, `Bash Piping`, `Database Design, Normalization, Optimization`, `SQL Joins`, `Python Decorators, Generators and Context Managers`, `Unit Testing`, `Django REST Framework` all the way to `Containerization(Docker and Kubernetes)` and `CI/CD Pipelines(Jenkins and Github Actions)`.
 
