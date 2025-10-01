@@ -6,7 +6,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, Max
+from django.db import models
 from .models import User, Dealer, Category, Car, CarImage, Review, Favorite, Buyer, Dealership
 from .serializers import (
     UserSerializer, UserProfileSerializer, DealerSerializer, 
@@ -268,7 +269,16 @@ class DealerCarCreateView(generics.CreateAPIView):
         if not hasattr(self.request.user, 'dealer_profile'):
             from rest_framework.exceptions import ValidationError
             raise ValidationError({'error': 'You must create a dealer profile first'})
-        serializer.save(dealer=self.request.user.dealer_profile)
+        
+        car = serializer.save(dealer=self.request.user.dealer_profile)
+        
+        # Handle image uploads
+        uploaded_images = self.request.FILES.getlist('uploaded_images')
+        if uploaded_images:
+            for index, image in enumerate(uploaded_images):
+                CarImage.objects.create(car=car, image=image, order=index)
+        
+        return car
 
 class DealerCarDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a specific car for authenticated dealer"""
@@ -300,6 +310,19 @@ class DealerCarDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        
+        # Handle image uploads
+        uploaded_images = request.FILES.getlist('uploaded_images')
+        if uploaded_images:
+            # Get the current max order
+            current_max_order = instance.images.aggregate(max_order=Max("order"))["max_order"] or -1
+            
+            for index, image in enumerate(uploaded_images):
+                CarImage.objects.create(
+                    car=instance,
+                    image=image,
+                    order=current_max_order + index + 1,
+                )
         
         # Return the updated instance using the detail serializer
         detail_serializer = CarDetailSerializer(instance, context={'request': request})
