@@ -31,9 +31,9 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
   useEffect(() => {
     if (dealership) {
       setFormData({
-        name: dealership.name,
-        description: dealership.description,
-        specialties: dealership.specialties,
+        name: dealership.name || "",
+        description: dealership.description || "",
+        specialties: dealership.specialties || [],
         website: dealership.website || "",
       });
       setAvatarPreview(dealership.avatar_url || null);
@@ -66,10 +66,10 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
 
   const addSpecialty = () => {
     const specialty = specialtyInput.trim();
-    if (specialty && !formData.specialties.includes(specialty)) {
+    if (specialty && !(formData.specialties || []).includes(specialty)) {
       setFormData(prev => ({
         ...prev,
-        specialties: [...prev.specialties, specialty]
+        specialties: [...(prev.specialties || []), specialty]
       }));
       setSpecialtyInput("");
     }
@@ -78,7 +78,7 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
   const removeSpecialty = (specialtyToRemove: string) => {
     setFormData(prev => ({
       ...prev,
-      specialties: prev.specialties.filter(specialty => specialty !== specialtyToRemove)
+      specialties: (prev.specialties || []).filter(specialty => specialty !== specialtyToRemove)
     }));
   };
 
@@ -113,16 +113,24 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
     setIsLoading(true);
 
     try {
+      // Ensure specialties is always an array
+      const submitData = {
+        ...formData,
+        specialties: formData.specialties || []
+      };
+
+      console.log('Submitting dealership data:', submitData);
+
       let result: Dealership;
       
       if (dealership) {
-        result = await dealershipApi.updateDealership(formData);
+        result = await dealershipApi.updateDealership(submitData);
         toast({
           title: "Success",
           description: "Dealership profile updated successfully",
         });
       } else {
-        result = await dealershipApi.createDealership(formData);
+        result = await dealershipApi.createDealership(submitData);
         toast({
           title: "Success",
           description: "Dealership profile created successfully",
@@ -254,9 +262,9 @@ const DealershipDialog = ({ isOpen, onClose, onSuccess, dealership }: Dealership
               </Button>
             </div>
             
-            {formData.specialties.length > 0 && (
+            {(formData.specialties || []).length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
-                {formData.specialties.map((specialty, index) => (
+                {(formData.specialties || []).map((specialty, index) => (
                   <Badge
                     key={index}
                     variant="secondary"

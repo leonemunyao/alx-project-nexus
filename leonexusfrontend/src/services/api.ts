@@ -705,13 +705,16 @@ export const dealershipApi = {
   createDealership: async (dealershipData: DealershipCreateUpdate): Promise<Dealership> => {
     const token = localStorage.getItem('authToken');
     
+    // Ensure specialties is always an array
+    const safeSpecialties = dealershipData.specialties || [];
+    
     // If there's an avatar file, use FormData, otherwise use JSON
     if (dealershipData.avatar) {
       const formData = new FormData();
       formData.append('name', dealershipData.name);
       formData.append('description', dealershipData.description);
       formData.append('website', dealershipData.website || '');
-      formData.append('specialties', JSON.stringify(dealershipData.specialties));
+      formData.append('specialties', JSON.stringify(safeSpecialties));
       formData.append('avatar', dealershipData.avatar);
 
       const response = await fetch(`${API_BASE_URL}/dealerships/create/`, {
@@ -733,7 +736,7 @@ export const dealershipApi = {
         body: JSON.stringify({
           name: dealershipData.name,
           description: dealershipData.description,
-          specialties: dealershipData.specialties,
+          specialties: safeSpecialties,
           website: dealershipData.website || '',
         }),
       });
@@ -746,13 +749,16 @@ export const dealershipApi = {
   updateDealership: async (dealershipData: DealershipCreateUpdate): Promise<Dealership> => {
     const token = localStorage.getItem('authToken');
     
+    // Ensure specialties is always an array
+    const safeSpecialties = dealershipData.specialties || [];
+    
     // If there's an avatar file, use FormData, otherwise use JSON
     if (dealershipData.avatar) {
       const formData = new FormData();
       formData.append('name', dealershipData.name);
       formData.append('description', dealershipData.description);
       formData.append('website', dealershipData.website || '');
-      formData.append('specialties', JSON.stringify(dealershipData.specialties));
+      formData.append('specialties', JSON.stringify(safeSpecialties));
       formData.append('avatar', dealershipData.avatar);
 
       const response = await fetch(`${API_BASE_URL}/dealerships/profile/`, {
@@ -774,7 +780,7 @@ export const dealershipApi = {
         body: JSON.stringify({
           name: dealershipData.name,
           description: dealershipData.description,
-          specialties: dealershipData.specialties,
+          specialties: safeSpecialties,
           website: dealershipData.website || '',
         }),
       });

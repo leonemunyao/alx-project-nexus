@@ -103,14 +103,22 @@ class DealershipCreateUpdateSerializer(serializers.ModelSerializer):
         fields = ['name', 'description', 'specialties', 'avatar', 'website']
     
     def validate_specialties(self, value):
+        # Handle None or empty values
+        if value is None:
+            return []
+        
         if not isinstance(value, list):
             raise serializers.ValidationError("Specialties must be a list of strings.")
         
+        # Filter out empty strings and validate
+        valid_specialties = []
         for specialty in value:
-            if not isinstance(specialty, str) or len(specialty.strip()) == 0:
+            if isinstance(specialty, str) and specialty.strip():
+                valid_specialties.append(specialty.strip())
+            elif specialty:  # Non-empty but not string
                 raise serializers.ValidationError("Each specialty must be a non-empty string.")
         
-        return [specialty.strip() for specialty in value if specialty.strip()]
+        return valid_specialties
     
     def create(self, validated_data):
         # Ensure user has dealer profile
