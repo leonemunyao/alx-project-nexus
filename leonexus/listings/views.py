@@ -451,8 +451,8 @@ def search_suggestions(request):
 
 # Dealership Views
 class DealershipListView(generics.ListAPIView):
-    """List all dealerships for public viewing"""
-    queryset = Dealership.objects.all()
+    """List all published dealerships for public viewing"""
+    queryset = Dealership.objects.filter(published=True)
     serializer_class = DealershipSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -461,7 +461,7 @@ class DealershipListView(generics.ListAPIView):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        return Dealership.objects.select_related('dealer__user').prefetch_related('dealer__cars')
+        return Dealership.objects.filter(published=True).select_related('dealer__user').prefetch_related('dealer__cars')
 
 class DealershipDetailView(generics.RetrieveAPIView):
     """Get specific dealership details"""
@@ -513,6 +513,28 @@ class DealershipUpdateView(generics.RetrieveUpdateAPIView):
             return DealershipSerializer
         return DealershipCreateUpdateSerializer
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_dealership_publish(request):
+    """Toggle dealership publish status"""
+    try:
+        if not hasattr(request.user, 'dealer_profile'):
+            return Response({'error': 'Dealer profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not hasattr(request.user.dealer_profile, 'dealership'):
+            return Response({'error': 'Dealership profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        dealership = request.user.dealer_profile.dealership
+        dealership.published = not dealership.published
+        dealership.save()
+        
+        return Response({
+            'published': dealership.published,
+            'message': f'Dealership {"published" if dealership.published else "unpublished"} successfully'
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def dealership_stats(request):
@@ -520,6 +542,7 @@ def dealership_stats(request):
     stats = {
         'total_dealerships': Dealership.objects.count(),
         'verified_dealerships': Dealership.objects.filter(is_verified=True).count(),
+        'published_dealerships': Dealership.objects.filter(published=True).count(),
         'total_cars_listed': sum(dealership.total_cars for dealership in Dealership.objects.all()),
         'average_rating': Dealership.objects.aggregate(
             avg_rating=Avg('dealer__cars__reviews__rating')

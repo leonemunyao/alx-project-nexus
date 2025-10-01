@@ -72,7 +72,7 @@ class DealershipSerializer(serializers.ModelSerializer):
         model = Dealership
         fields = [
             'id', 'dealer', 'name', 'description', 'specialties', 
-            'avatar', 'avatar_url', 'website', 'is_verified',
+            'avatar', 'avatar_url', 'website', 'is_verified', 'published',
             'total_cars', 'locations_served', 'average_rating',
             'created_at', 'updated_at'
         ]

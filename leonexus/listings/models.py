@@ -148,6 +148,7 @@ class Dealership(models.Model):
     avatar = models.ImageField(upload_to="dealership_avatars/", blank=True, null=True)
     website = models.URLField(blank=True)
     is_verified = models.BooleanField(default=False)
+    published = models.BooleanField(default=False)  # New field for publish status
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

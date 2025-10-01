@@ -27,6 +27,7 @@ urlpatterns = [
     path('dealerships/<int:pk>/', views.DealershipDetailView.as_view(), name='dealership-detail'),
     path('dealerships/create/', views.DealershipCreateView.as_view(), name='dealership-create'),
     path('dealerships/profile/', views.DealershipUpdateView.as_view(), name='dealership-profile'),
+    path('dealerships/toggle-publish/', views.toggle_dealership_publish, name='dealership-toggle-publish'),
     path('dealerships/stats/', views.dealership_stats, name='dealership-stats'),
     
     # Dealer Car Management URLs

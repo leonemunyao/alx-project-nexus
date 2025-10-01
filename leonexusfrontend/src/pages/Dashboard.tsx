@@ -26,6 +26,7 @@ const Dashboard = () => {
   const [isListCarDialogOpen, setIsListCarDialogOpen] = useState(false);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [isDealershipDialogOpen, setIsDealershipDialogOpen] = useState(false);
+  const [isTogglingPublish, setIsTogglingPublish] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dealershipLoading, setDealershipLoading] = useState(false);
   const navigate = useNavigate();
@@ -183,6 +184,29 @@ const Dashboard = () => {
     };
     setDealership(normalizedDealership);
     setIsDealershipDialogOpen(false);
+  };
+
+  const handleTogglePublish = async () => {
+    if (!dealership) return;
+
+    setIsTogglingPublish(true);
+    try {
+      const result = await dealershipApi.togglePublish();
+      setDealership(prev => prev ? { ...prev, published: result.published } : null);
+      toast({
+        title: "Success",
+        description: result.message,
+      });
+    } catch (error) {
+      console.error('Failed to toggle publish status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update publish status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTogglingPublish(false);
+    }
   };
 
   if (!dealer) {
@@ -390,6 +414,39 @@ const Dashboard = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Publish Toggle */}
+                  <div className="bg-muted p-4 rounded-lg">
+                    <h4 className="font-medium mb-3">Visibility</h4>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">
+                          {dealership.published ? 'Published' : 'Draft'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {dealership.published 
+                            ? 'Your dealership is visible to customers' 
+                            : 'Your dealership is not visible to customers'
+                          }
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleTogglePublish}
+                        variant={dealership.published ? "destructive" : "default"}
+                        size="sm"
+                        className={dealership.published ? "" : "bg-gradient-gold hover:shadow-gold"}
+                        disabled={isTogglingPublish}
+                      >
+                        {isTogglingPublish ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : dealership.published ? (
+                          'Unpublish'
+                        ) : (
+                          'Publish'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (

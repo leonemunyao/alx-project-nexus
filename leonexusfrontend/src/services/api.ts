@@ -121,6 +121,7 @@ export interface Dealership {
   avatar_url?: string;
   website?: string;
   is_verified: boolean;
+  published: boolean;
   total_cars: number;
   locations_served: string[];
   average_rating: number;
@@ -858,6 +859,7 @@ export const dealershipApi = {
   getDealershipStats: async (): Promise<{
     total_dealerships: number;
     verified_dealerships: number;
+    published_dealerships: number;
     total_cars_listed: number;
     average_rating: number;
     specialties: string[];
@@ -866,6 +868,20 @@ export const dealershipApi = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+      },
+    });
+
+    return handleApiResponse(response);
+  },
+
+  // Toggle dealership publish status
+  togglePublish: async (): Promise<{ published: boolean; message: string }> => {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/dealerships/toggle-publish/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Token ${token}`,
       },
     });
 
