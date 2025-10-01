@@ -73,8 +73,8 @@ export interface Car {
 export interface CarImage {
   id: number;
   car: number;
-  image: string;
-  image_url: string;
+  image: string; // Cloudinary public_id
+  image_url: string; // Cloudinary secure_url
   order: number;
   created_at: string;
 }
@@ -117,8 +117,8 @@ export interface Dealership {
   name: string;
   description: string;
   specialties: string[];
-  avatar?: string;
-  avatar_url?: string;
+  avatar?: string; // Cloudinary public_id
+  avatar_url?: string; // Cloudinary secure_url
   website?: string;
   is_verified: boolean;
   published: boolean;
@@ -144,6 +144,39 @@ const getAuthHeaders = () => {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Token ${token}` }),
   };
+};
+
+// Cloudinary Image Optimization Helper
+export const getOptimizedImageUrl = (imageUrl: string, options?: {
+  width?: number;
+  height?: number;
+  crop?: 'fill' | 'fit' | 'scale' | 'crop';
+  quality?: 'auto' | number;
+  format?: 'auto' | 'webp' | 'jpg' | 'png';
+}): string => {
+  if (!imageUrl) return '/placeholder.svg';
+  
+  // If it's already a Cloudinary URL, apply transformations
+  if (imageUrl.includes('cloudinary.com')) {
+    const baseUrl = imageUrl.split('/upload/')[0] + '/upload/';
+    const publicId = imageUrl.split('/upload/')[1];
+    
+    let transformations = '';
+    if (options?.width) transformations += `w_${options.width},`;
+    if (options?.height) transformations += `h_${options.height},`;
+    if (options?.crop) transformations += `c_${options.crop},`;
+    if (options?.quality) transformations += `q_${options.quality},`;
+    if (options?.format) transformations += `f_${options.format},`;
+    
+    // Remove trailing comma
+    if (transformations.endsWith(',')) {
+      transformations = transformations.slice(0, -1);
+    }
+    
+    return `${baseUrl}${transformations ? transformations + '/' : ''}${publicId}`;
+  }
+  
+  return imageUrl;
 };
 
 const handleApiResponse = async (response: Response) => {

@@ -2,7 +2,7 @@ import { Heart, MapPin, Calendar, Gauge, Fuel, Star, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Car } from "@/services/api";
+import { Car, getOptimizedImageUrl } from "@/services/api";
 
 interface CarCardProps {
   car: Car;
@@ -53,7 +53,7 @@ const CarCard = ({ car, layout = "grid", onToggleFavorite, isFavorited = false }
           {/* Image */}
           <div className="relative md:w-80 h-64 md:h-auto overflow-hidden">
             <img
-              src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
+              src={car.images && car.images.length > 0 ? getOptimizedImageUrl(car.images[0].image_url, { width: 400, height: 300, crop: 'fill', quality: 'auto' }) : "/placeholder.svg"}
               alt={car.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
               onClick={handleViewDetails}
@@ -142,7 +142,7 @@ const CarCard = ({ car, layout = "grid", onToggleFavorite, isFavorited = false }
       {/* Image */}
       <div className="relative h-64 overflow-hidden">
         <img
-          src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
+          src={car.images && car.images.length > 0 ? getOptimizedImageUrl(car.images[0].image_url, { width: 400, height: 300, crop: 'fill', quality: 'auto' }) : "/placeholder.svg"}
           alt={car.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
           onClick={handleViewDetails}

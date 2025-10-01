@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { dealershipApi, Dealership, DealershipCreateUpdate } from "@/services/api";
+import { dealershipApi, Dealership, DealershipCreateUpdate, getOptimizedImageUrl } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 
 interface DealershipDialogProps {

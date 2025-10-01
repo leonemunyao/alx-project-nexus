@@ -10,7 +10,7 @@ import EditCarDialog from "@/components/EditCarDialog";
 import ListCarDialog from "@/components/ListCarDialog";
 import ProfileDialog from "@/components/ProfileDialog";
 import DealershipDialog from "@/components/DealershipDialog";
-import { Car, dealerCarsApi, dealershipApi, Dealership, bulkCarApi } from "@/services/api";
+import { Car, dealerCarsApi, dealershipApi, Dealership, bulkCarApi, getOptimizedImageUrl } from "@/services/api";
 
 interface Dealer {
   name: string;
@@ -601,7 +601,7 @@ const Dashboard = () => {
                   <Card key={car.id} className="overflow-hidden">
                     <div className="aspect-video bg-muted relative">
                       <img
-                        src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
+                        src={car.images && car.images.length > 0 ? getOptimizedImageUrl(car.images[0].image_url, { width: 300, height: 200, crop: 'fill', quality: 'auto' }) : "/placeholder.svg"}
                         alt={`${car.make} ${car.model}`}
                         className="w-full h-full object-cover"
                         onError={(e) => {

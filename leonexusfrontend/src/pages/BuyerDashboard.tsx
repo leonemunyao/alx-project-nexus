@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { favoritesApi, carsApi, reviewsApi, Favorite, Car as CarType, Review } from "@/services/api";
+import { favoritesApi, carsApi, reviewsApi, Favorite, Car as CarType, Review, getOptimizedImageUrl } from "@/services/api";
 import ProfileDialog from "@/components/ProfileDialog";
 import Header from "@/components/Header";
 
@@ -265,7 +265,7 @@ const BuyerDashboard = () => {
                           <div className="flex">
                             <div className="relative w-32 h-24 flex-shrink-0">
                               <img
-                                src={favorite.car.images && favorite.car.images.length > 0 ? favorite.car.images[0].image_url : "/placeholder.svg"}
+                                src={favorite.car.images && favorite.car.images.length > 0 ? getOptimizedImageUrl(favorite.car.images[0].image_url, { width: 200, height: 150, crop: 'fill', quality: 'auto' }) : "/placeholder.svg"}
                                 alt={`${favorite.car.make} ${favorite.car.model}`}
                                 className="w-full h-full object-cover cursor-pointer"
                                 onClick={() => navigate(`/cars/${favorite.car.id}`)}
@@ -358,7 +358,7 @@ const BuyerDashboard = () => {
                          onClick={() => navigate(`/cars/${car.id}`)}>
                       <div className="relative w-16 h-12 flex-shrink-0">
                         <img
-                          src={car.images && car.images.length > 0 ? car.images[0].image_url : "/placeholder.svg"}
+                          src={car.images && car.images.length > 0 ? getOptimizedImageUrl(car.images[0].image_url, { width: 100, height: 75, crop: 'fill', quality: 'auto' }) : "/placeholder.svg"}
                           alt={`${car.make} ${car.model}`}
                           className="w-full h-full object-cover rounded"
                           onError={(e) => {
