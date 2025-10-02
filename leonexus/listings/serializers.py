@@ -283,6 +283,7 @@ class CarListSerializer(serializers.ModelSerializer):
 
     dealer = DealerSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
+    images = CarImageSerializer(many=True, read_only=True)
     primary_image = serializers.SerializerMethodField()
     average_rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
@@ -303,6 +304,7 @@ class CarListSerializer(serializers.ModelSerializer):
             "condition",
             "dealer",
             "category",
+            "images",
             "primary_image",
             "average_rating",
             "review_count",

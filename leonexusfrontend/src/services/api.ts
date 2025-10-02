@@ -64,6 +64,7 @@ export interface Car {
   published: boolean;
   created_at: string;
   images?: CarImage[]; // Optional, might be included in some responses
+  primary_image?: string; // Optional, legacy field for backward compatibility
   reviews?: Review[]; // Optional, might be included in some responses
   average_rating?: number;
   review_count?: number;
@@ -147,6 +148,50 @@ const getAuthHeaders = () => {
 };
 
 // Cloudinary Image Optimization Helper
+// Helper function to get the first car image URL
+export const getCarImageUrl = (car: Car, options?: {
+  width?: number;
+  height?: number;
+  crop?: 'fill' | 'fit' | 'scale' | 'crop';
+  quality?: 'auto' | number;
+  format?: 'auto' | 'webp' | 'jpg' | 'png';
+}): string => {
+  // Try to get from images array first (new format)
+  if (car.images && car.images.length > 0 && car.images[0].image_url) {
+    return getOptimizedImageUrl(car.images[0].image_url, options);
+  }
+  
+  // Fallback to primary_image field (legacy format)
+  if (car.primary_image) {
+    return getOptimizedImageUrl(car.primary_image, options);
+  }
+  
+  // No image available
+  return "/placeholder.svg";
+};
+
+// Helper function to get a specific car image URL by index
+export const getCarImageUrlByIndex = (car: Car, index: number, options?: {
+  width?: number;
+  height?: number;
+  crop?: 'fill' | 'fit' | 'scale' | 'crop';
+  quality?: 'auto' | number;
+  format?: 'auto' | 'webp' | 'jpg' | 'png';
+}): string => {
+  // Try to get from images array first (new format)
+  if (car.images && car.images.length > index && car.images[index].image_url) {
+    return getOptimizedImageUrl(car.images[index].image_url, options);
+  }
+  
+  // Fallback to primary_image field (legacy format) for index 0
+  if (index === 0 && car.primary_image) {
+    return getOptimizedImageUrl(car.primary_image, options);
+  }
+  
+  // No image available
+  return "/placeholder.svg";
+};
+
 export const getOptimizedImageUrl = (imageUrl: string, options?: {
   width?: number;
   height?: number;
@@ -198,7 +243,7 @@ export const authApi = {
     password: string;
     role: 'BUYER' | 'DEALER';
   }): Promise<{ message: string }> => {
-    const response = await fetch(`${API_BASE_URL}/auth/register/`, {
+    const response = await fetch(`${API_BASE_URL}/users/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

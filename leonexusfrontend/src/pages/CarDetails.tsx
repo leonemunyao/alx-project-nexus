@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { carsApi, reviewsApi, favoritesApi, Review, Car, getOptimizedImageUrl } from "@/services/api";
+import { carsApi, reviewsApi, favoritesApi, Review, Car, getCarImageUrlByIndex } from "@/services/api";
 import Header from "@/components/Header";
 
 const CarDetails = () => {
@@ -215,7 +215,7 @@ const CarDetails = () => {
                 {car.images && car.images.length > 0 ? (
                   <div className="relative">
                     <img
-                      src={car.images[currentImageIndex] ? getOptimizedImageUrl(car.images[currentImageIndex].image_url, { width: 800, height: 600, crop: 'fill', quality: 'auto' }) : "/placeholder.svg"}
+                      src={getCarImageUrlByIndex(car, currentImageIndex, { width: 800, height: 600, crop: 'fill', quality: 'auto' })}
                       alt={`${car.make} ${car.model}`}
                       className="w-full h-96 object-cover rounded-t-lg"
                       onError={(e) => {

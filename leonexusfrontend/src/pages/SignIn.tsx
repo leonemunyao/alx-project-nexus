@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +85,16 @@ const SignIn = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
           <Card className="border-2 border-border/50 shadow-2xl">
-            <CardHeader className="text-center pb-8">
+            <CardHeader className="text-center pb-8 relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-muted"
+                onClick={() => navigate("/")}
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </Button>
               <CardTitle className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
                 Welcome Back
               </CardTitle>
